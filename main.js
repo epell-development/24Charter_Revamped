@@ -206,10 +206,46 @@ const commercialAirlines = {
 
     // --- State ---
     const state = {
-      airline: JSON.parse(localStorage.getItem('airline')||'null'),
-      flights: JSON.parse(localStorage.getItem('flights')||'[]'),
-      offers: []
+      airline: null,
+      flights: [],
+      offers: [],
+      currency: 0
     };
+
+    // --- Cookie Helpers ---
+    function setCookie(name, value, days = 365) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + date.toUTCString();
+      document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/;SameSite=Lax";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+      }
+      return null;
+    }
+
+    function save() {
+      setCookie('airline', JSON.stringify(state.airline));
+      setCookie('flights', JSON.stringify(state.flights));
+      setCookie('currency', state.currency.toString());
+    }
+
+    function loadState() {
+      const airlineCookie = getCookie('airline');
+      const flightsCookie = getCookie('flights');
+      const currencyCookie = getCookie('currency');
+
+      if (airlineCookie) state.airline = JSON.parse(airlineCookie);
+      if (flightsCookie) state.flights = JSON.parse(flightsCookie);
+      if (currencyCookie) state.currency = parseInt(currencyCookie, 10) || 0;
+    }
 
     // --- Helpers ---
     function getRandomGate(airportIcao, isCargo = false) {
@@ -505,9 +541,11 @@ const commercialAirlines = {
       return offers;
     }
 
-    function save(){
-      localStorage.setItem('airline', JSON.stringify(state.airline));
-      localStorage.setItem('flights', JSON.stringify(state.flights));
+    function updateCurrencyDisplay() {
+      const amountEl = el('#currencyAmount');
+      if (amountEl) {
+        amountEl.textContent = state.currency;
+      }
     }
 
     // --- UI Renderers ---
@@ -716,7 +754,8 @@ const commercialAirlines = {
             state.flights.push({...o, id: crypto.randomUUID(), status: 'scheduled'});
             save();
             renderFlights();
-            card.remove();
+            card.classList.add('accepted'); // Add animation class
+            setTimeout(() => card.remove(), 300); // Remove after animation
             toast('Flight added to My Flights');
           }
         };
@@ -811,7 +850,8 @@ const commercialAirlines = {
           if (card) {
             state.offers.splice(i, 1);
             save();
-            card.remove();
+            card.classList.add('declined'); // Add animation class
+            setTimeout(() => card.remove(), 300);
             toast('Offer declined');
             
             // If no offers left, show the empty state
@@ -976,19 +1016,17 @@ const commercialAirlines = {
               <div class="mini-load-sheet-value">${cargoWeight}kg</div>
             </div>
             <div class="mini-load-sheet-item">
+              <div class="mini-load-sheet-label">Fuel</div>
+              <div class="mini-load-sheet-value">${fuelWeight}kg</div>
+            </div>
+            <div class="mini-load-sheet-progress">
+              <div class="mini-load-sheet-progress-bar" style="width: ${weightPercentage}%;"></div>
+              <div class="mini-load-sheet-value">${totalWeight}kg</div>
+            </div>
+          </div>
         </div>
-        <div class="mini-load-sheet-item">
-          <div class="mini-load-sheet-label">Fuel</div>
-          <div class="mini-load-sheet-value">${fuelWeight}kg</div>
-        </div>
-        <div class="mini-load-sheet-progress">
-          <div class="mini-load-sheet-progress-bar" style="width: ${weightPercentage}%;"></div>
-          <div class="mini-load-sheet-value">${totalWeight}kg</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
     // Deterministic per-flight load sheet generator and store
     function getOrCreateLoadSheet(f) {
       if (!f.loadSheet) {
@@ -1056,7 +1094,7 @@ const commercialAirlines = {
       body.innerHTML = state.flights.slice().reverse().map(f=>{
         ensureOps(f);
         return `
-        <tr>
+        <tr data-flight-id="${f.id}">
           <td><b>${f.code}${f.flight.replace(f.code,'')}</b></td>
           <td>
             ${f.from} → ${f.to}
@@ -1079,9 +1117,39 @@ const commercialAirlines = {
       }).join('');
 
       body.querySelectorAll('[data-start]').forEach(b=> b.onclick = ()=>updateFlight(b.dataset.start,'enroute'));
-      body.querySelectorAll('[data-complete]').forEach(b=> b.onclick = ()=>updateFlight(b.dataset.complete,'completed'));
+      body.querySelectorAll('[data-complete]').forEach(b=> b.onclick = ()=> {
+        const f = state.flights.find(x=>x.id===b.dataset.complete);
+        if (f) {
+          state.currency += f.pay;
+          save();
+          updateCurrencyDisplay();
+          toast(`Earned $${f.pay} for completing flight!`);
+        }
+        updateFlight(b.dataset.complete,'completed');
+      });
       body.querySelectorAll('[data-cancel]').forEach(b=> b.onclick = ()=>removeFlight(b.dataset.cancel));
       body.querySelectorAll('[data-ops]').forEach(b=> b.onclick = ()=> openOps(b.dataset.ops));
+
+      // Make flights draggable for reordering
+      const tableBody = el('#flightsBody');
+      if (tableBody) {
+        new Sortable(tableBody, {
+          animation: 150,
+          handle: 'tr',
+          onEnd: (evt) => {
+            // Reorder state.flights based on new DOM order
+            const newFlights = [];
+            tableBody.querySelectorAll('tr').forEach(tr => {
+              const id = tr.dataset.flightId;
+              const flight = state.flights.find(f => f.id === id);
+              if (flight) newFlights.push(flight);
+            });
+            state.flights = newFlights;
+            save();
+            toast('Flights reordered');
+          }
+        });
+      }
     }
 
     function updateFlight(id, newStatus){
@@ -1130,296 +1198,4 @@ const commercialAirlines = {
           <div class="card airline-card">
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
               <div class="airline-logo-container" style="background: transparent; border: none;">
-                <img src="airline_icons/${code}.png" alt="${name} Logo" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${color.color||'#fff'};font-weight:bold;font-size:0.9rem\'>${code}</div>'">
-              </div>
-              <div style="min-width:0; flex:1">
-                <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
-                <div class="muted" style="font-size:.85rem">ICAO <span class="highlight">•</span> <span class="code">${code}</span> · <span class="tag ${isCargo ? 'tag-cargo' : 'tag-pax'}">${isCargo ? 'Cargo' : 'Passenger'}</span></div>
-              </div>
-            </div>
-            <div id="" class="muted" style="font-size:.9rem; line-height:1.5; margin-bottom:10px;">${info.description || 'No description available.'}</div>
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Hub</div>
-                <div class="info-value"><span class="highlight">${hub}</span></div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Main Routes</div>
-                <div class="info-value" style="line-height:1.5">${routes}</div>
-              </div>
-              <div class="info-item" style="grid-column:1 / -1">
-                <div class="info-label">Fleet</div>
-                <div class="info-value" data-field="fleet"><div class="fleet-list">${fleet}</div></div>
-              </div>
-            </div>
-          </div>`;
-      };
-
-      commercialEl.innerHTML = Object.entries(commercialAirlines)
-        .map(([name, code]) => renderInfoCard(name, code)).join('');
-
-      cargoEl.innerHTML = Object.entries(cargoAirlines)
-        .map(([name, code]) => renderInfoCard(name, code)).join('');
-
-      // Keep modal list for switching from other UI (Switch button)
-      renderModalAirlines();
-    }
-    
-    function renderModalAirlines() {
-      const commercialEl = el('#modalCommercialAirlines');
-      const cargoEl = el('#modalCargoAirlines');
-      
-      commercialEl.innerHTML = Object.entries(commercialAirlines).map(([name,code]) => {
-        return `<div class="airline-pill" data-code="${code}" data-name="${name}">
-          <div class="airline-logo-container" style="background: transparent; border: none;">
-            <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
-          </div>
-          <div>${name} <span class="muted">${code}</span></div>
-        </div>`;
-      }).join('');
-      
-      cargoEl.innerHTML = Object.entries(cargoAirlines).map(([name,code]) => {
-        return `<div class="airline-pill" data-code="${code}" data-name="${name}">
-          <div class="airline-logo-container" style="background: transparent; border: none;">
-            <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
-          </div>
-          <div>${name} <span class="muted">${code}</span></div>
-        </div>`;
-      }).join('');
-      
-      // Add click handlers for airline selection
-      document.querySelectorAll('#modalCommercialAirlines .airline-pill, #modalCargoAirlines .airline-pill').forEach(el => {
-        el.onclick = () => {
-          const code = el.dataset.code;
-          const name = el.dataset.name;
-          state.airline = { code, name };
-          state.offers = []; // Clear existing offers to force refresh
-          state.lastGenerated = 0; // Reset the generation timestamp
-          save();
-          closeAirlineModal();
-          renderSelectedAirline();
-          renderOffers(); // This will generate new offers for the selected airline
-          toast(`Selected ${name}`);
-        };
-      });
-    }
-
-    function showModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-      }
-    }
-
-    function openAirlineModal() {
-      showModal('airlineModal');
-    }
-
-    function closeAirlineModal() {
-      closeModal('airlineModal');
-    }
-
-    function capitalize(s){ return s[0].toUpperCase()+s.slice(1); }
-
-    function formatTimeRemaining(ms) {
-      const minutes = Math.floor(ms / 60000);
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${remainingMinutes}m`;
-      }
-      return `${minutes}m`;
-    }
-
-    function updateOfferTimes() {
-      const now = new Date();
-      document.querySelectorAll('.offer-card').forEach(card => {
-        const depTime = new Date(card.dataset.departure);
-        const timeRemaining = depTime - now;
-        const timeElement = card.querySelector('.time-until');
-        
-        if (!timeElement) return;
-        
-        if (timeRemaining > 0) {
-          timeElement.textContent = `Departs in ${formatTimeRemaining(timeRemaining)}`;
-          timeElement.style.color = timeRemaining < 300000 ? '#ef4444' : 'var(--muted)';
-        } else {
-          timeElement.textContent = 'Departed';
-          timeElement.style.color = '#ef4444';
-        }
-      });
-    }
-
-    function uiTick(){
-      renderSelectedAirline();
-      renderAirlines();
-      renderOffers();
-      renderFlights();
-      updateOfferTimes();
-    }
-
-    // Tab switching function
-    function switchTab(tabId) {
-      // Update active tab
-      document.querySelectorAll('.tab').forEach(tab => {
-        if (tab.dataset.tab === tabId) {
-          tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
-        }
-      });
-
-      // Show corresponding content
-      document.querySelectorAll('.content').forEach(content => {
-        if (content.id === `tab-${tabId}`) {
-          content.style.display = 'block';
-          // Load content if needed
-          if (tabId === 'flights') renderFlights();
-          if (tabId === 'airlines') renderAirlines();
-        } else {
-          content.style.display = 'none';
-        }
-      });
-    }
-
-    // --- Touch Event Helpers ---
-const isTouchDevice = () => {
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-};
-
-// Add touch feedback class
-const addTouchFeedback = (element) => {
-  if (!isTouchDevice()) return;
-  
-  const handleTouchStart = () => {
-    element.classList.add('touch-active');
-  };
-  
-  const handleTouchEnd = () => {
-    element.classList.remove('touch-active');
-  };
-  
-  element.addEventListener('touchstart', handleTouchStart, { passive: true });
-  element.addEventListener('touchend', handleTouchEnd, { passive: true });
-  element.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-};
-
-// Prevent double-tap zoom on buttons
-const preventDoubleTapZoom = () => {
-  if (!isTouchDevice()) return;
-  
-  let lastTap = 0;
-  document.addEventListener('touchend', (e) => {
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTap;
-    if (tapLength < 500 && tapLength > 0) {
-      e.preventDefault();
-      e.target.click();
-    }
-    lastTap = currentTime;
-  }, { passive: false });
-};
-
-// --- Events ---
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize touch feedback for buttons
-  if (isTouchDevice()) {
-    document.body.classList.add('touch-device');
-    preventDoubleTapZoom();
-    
-    // Add touch feedback to all interactive elements
-    document.querySelectorAll('.btn, .tab, .airline-pill, .chip').forEach(el => {
-      addTouchFeedback(el);
-    });
-  }
-  
-  // Initialize tab switching
-  document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => switchTab(tab.dataset.tab);
-      });
-      
-      // Airlines tab is informational now; disable click-to-select in this tab
-      const tabAirlines = document.querySelector('#tab-airlines');
-      if (tabAirlines) {
-        tabAirlines.addEventListener('click', (e) => {
-          // Intentionally no selection behavior
-        });
-      }
-      
-      // Event delegation for airline pill clicks in Airlines tab
-      document.querySelector('#tab-airlines').addEventListener('click', (e) => {
-        // Intentionally no selection behavior
-      });
-      
-      // Other event listeners
-      const bannerChoose = el('#bannerChoose');
-      const closeModal = el('#closeModal');
-      const openAirlines = el('#openAirlines');
-      
-      if (bannerChoose) bannerChoose.onclick = openAirlineModal;
-      if (closeModal) closeModal.onclick = closeAirlineModal;
-      if (openAirlines) openAirlines.onclick = openAirlineModal;
-      
-      // Initialize the default tab
-      switchTab('offers');
-    });
-
-    // Event listeners for filters and search
-    const refreshBtn = el('#refreshOffers');
-    if (refreshBtn) refreshBtn.onclick = ()=>{ state.lastGenerated = 0; renderOffers(); toast('Offers refreshed'); };
-    
-    const searchAirport = el('#searchAirport');
-    if (searchAirport) {
-      searchAirport.addEventListener('input', ()=> renderOffers());
-      const clearSearch = el('#clearSearch');
-      if (clearSearch) clearSearch.onclick = ()=>{ searchAirport.value=''; renderOffers(); };
-    }
-    
-    // Use event delegation for filter checkboxes since they might be moved
-    document.addEventListener('change', (e) => {
-      if (e.target.classList.contains('flt-type')) {
-        renderOffers();
-      }
-    });
-    
-    // Offer search functionality
-    el('#searchOffers').addEventListener('input', (e) => {
-      filterOffers(e.target.value.trim().toLowerCase());
-    });
-    
-    el('#clearOfferSearch').onclick = () => {
-      el('#searchOffers').value = '';
-      filterOffers('');
-    };
-
-
-    // Handle viewport height on mobile
-const setViewportHeight = () => {
-  let vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-};
-
-// --- Init ---
-uiTick();
-
-// Update viewport height on resize and orientation change
-window.addEventListener('resize', setViewportHeight);
-window.addEventListener('orientationchange', setViewportHeight);
-setViewportHeight();
-
-// Initialize with or without airline
-if(!state.airline){
-      // gentle nudge to choose airline
-      el('#airlineBanner').style.display='flex';
-      setTimeout(openAirlineModal, 300);
-    }
+                <img src="airline_icons/${code}.png" alt="${name} Logo"
