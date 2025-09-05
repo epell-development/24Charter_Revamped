@@ -31,6 +31,10 @@
         <span class="tab-icon material-icons-round">business</span>
         <span class="tab-text">Airlines</span>
       </button>
+      <button class="tab" data-tab="shop" aria-label="Shop">
+        <span class="tab-icon material-icons-round">shopping_cart</span>
+        <span class="tab-text">Shop</span>
+      </button>
     </nav>
   </header>
 
@@ -131,6 +135,14 @@
         <div class="grid" id="cargoList" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
       </div>
     </section>
+
+    <section class="content" id="tab-shop" style="display:none">
+      <div class="card" style="display:grid; gap:14px">
+        <div class="section-title">Unlock Airlines</div>
+        <div class="grid" id="shopList" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
+      </div>
+    </section>
+
   </main>
 
   <div class="modal" id="airlineModal">
