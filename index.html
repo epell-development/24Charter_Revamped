@@ -1,121 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#121212" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>24Charter</title>
-  <link rel="icon" type="image/png" href="24charter/favicon.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airline Tycoon</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="navbar">
-    <div class="brand">
-      <img src="24charter/fulllogo.png" alt="24Charter Logo" style="height: 32px; margin-right: 8px;">
-      <span class="muted" style="font-size:.9rem">— Fly what you want, when you want</span>
-    </div>
-    <nav class="tabs">
-      <button class="tab active" data-tab="offers" aria-label="Job Offers">
-        <span class="tab-icon material-icons-round">flight_takeoff</span>
-        <span class="tab-text">Job Offers</span>
-      </button>
-      <button class="tab" data-tab="flights" aria-label="My Flights">
-        <span class="tab-icon material-icons-round">list_alt</span>
-        <span class="tab-text">My Flights</span>
-      </button>
-      <button class="tab" data-tab="airlines" aria-label="Airlines">
-        <span class="tab-icon material-icons-round">business</span>
-        <span class="tab-text">Airlines</span>
-      </button>
-      <button class="tab" data-tab="shop" aria-label="Shop">
-        <span class="tab-icon material-icons-round">shopping_cart</span>
-        <span class="tab-text">Shop</span>
-      </button>
-    </nav>
-  </header>
-
-  <main class="wrap">
-    <aside class="left">
-      <div class="section-title">Selected Airline</div>
-      <div id="selectedAirline" class="info-card" style="padding: 16px 20px;">
-        <div class="muted" style="margin-bottom: 12px;">No airline selected</div>
-        <button class="btn primary" id="openAirlines" aria-label="Choose Airline" style="width: 100%; justify-content: center;">
-          <span class="btn-icon material-icons-round">flight_takeoff</span>
-          <span>Choose Airline</span>
-        </button>
-      </div>
-      <div class="section-title">Currency</div>
-      <div id="currencyDisplay" class="info-card" style="padding: 16px 20px; text-align: center;">
-        <span class="material-icons-round" style="font-size: 1.2em; color: var(--primary);">attach_money</span>
+  <div class="container">
+    <div class="left">
+      <div class="currency">
+        <span>💰</span>
         <span id="currencyAmount">0</span>
       </div>
-      <div class="section-title">Tips</div>
-      <div class="info-card muted" style="font-size:.9rem">
-        • Pick an airline to unlock offers.<br>
-        • Accept jobs to add them to <b>My Flights</b>.<br>
-        • Mark as <b>Enroute</b> and <b>Complete</b> when you fly.<br>
-        • Everything saves locally (no login needed).
+      <div class="card" style="margin-bottom: 12px;">
+        <div id="selectedAirline"></div>
+        <button id="openAirlines" class="btn primary" style="width: 100%;">Select Airline</button>
       </div>
-    </aside>
-
-    <section class="content" id="tab-offers">
-      <div id="airlineBanner" class="banner" style="display:none">
-        <div class="banner-content">
-          <span class="material-icons-round" style="font-size: 1.2em; color: var(--muted);">info</span>
-          <span class="muted">No airline selected. Choose one to generate offers.</span>
-        </div>
-        <button class="btn primary" id="bannerChoose">
-          <span class="btn-icon material-icons-round">flight_takeoff</span>
-          <span>Choose Airline</span>
-        </button>
-      </div>
-      <div class="card" style="margin-bottom: 20px; padding: 20px;">
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div class="search" style="max-width: 100%;">
-            <input class="input" id="searchOffers" placeholder="Search offers by route, aircraft, flight number or gate">
-            <button class="btn ghost" id="clearOfferSearch" aria-label="Clear search">
-            <span class="btn-icon material-icons-round">close</span>
-            <span>Clear</span>
-          </button>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              <label class="filter-label">
-                <input type="checkbox" class="flt-type" value="major" checked>
-                <span class="chip">Major</span>
-              </label>
-              <label class="filter-label">
-                <input type="checkbox" class="flt-type" value="regional" checked>
-                <span class="chip">Regional</span>
-              </label>
-              <label class="filter-label">
-                <input type="checkbox" class="flt-type" value="small" checked>
-                <span class="chip">Small</span>
-              </label>
-            </div>
-            <button class="btn" id="refreshOffers" style="white-space: nowrap;" aria-label="Refresh Offers">
-            <span class="btn-icon material-icons-round">refresh</span>
-            <span>Refresh</span>
-          </button>
-          </div>
-        </div>
-      </div>
-      <div class="grid offers" id="offersGrid"></div>
-      <div id="offersEmpty" class="empty" style="display:none">No offers found. Try adjusting your search or filters.</div>
-    </section>
-
-    <section class="content" id="tab-flights" style="display:none">
       <div class="card">
+        <div class="filters">
+          <div class="filter-title">Filter Airports</div>
+          <label><input type="checkbox" class="flt-type" value="major" checked> Major</label>
+          <label><input type="checkbox" class="flt-type" value="regional" checked> Regional</label>
+          <label><input type="checkbox" class="flt-type" value="small"> Small</label>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="tabs">
+        <div class="tab active" data-tab="offers">Offers</div>
+        <div class="tab" data-tab="flights">My Flights</div>
+        <div class="tab" data-tab="airlines">Airlines</div>
+        <div class="tab" data-tab="shop">Shop</div>
+      </div>
+      <div class="content" id="tab-offers">
+        <div id="airlineBanner" style="display: none; text-align: center; padding: 12px; background: var(--card-bg); border-radius: 8px; margin-bottom: 12px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">No airline selected</div>
+          <button id="bannerChoose" class="btn primary">Choose an airline</button>
+        </div>
+        <div class="search-bar">
+          <input id="searchOffers" type="text" placeholder="Search offers..." />
+          <button id="clearOfferSearch" class="btn">Clear</button>
+          <button id="refreshOffers" class="btn primary">Refresh</button>
+        </div>
+        <div id="offersGrid"></div>
+        <div id="offersEmpty" style="display: none; text-align: center; padding: 20px; color: var(--muted);">No offers available. Try adjusting your filters.</div>
+      </div>
+      <div class="content" id="tab-flights" style="display: none;">
         <table>
           <thead>
             <tr>
               <th>Flight</th>
               <th>Route</th>
-              <th>STD → STA</th>
+              <th>Times</th>
               <th>Aircraft</th>
               <th>Status</th>
               <th>Actions</th>
@@ -123,68 +60,47 @@
           </thead>
           <tbody id="flightsBody"></tbody>
         </table>
-        <div id="flightsEmpty" class="empty" style="display:none">No saved flights yet. Accept an offer to add it here.</div>
+        <div id="flightsEmpty" style="display: none; text-align: center; padding: 20px; color: var(--muted);">No flights scheduled.</div>
       </div>
-    </section>
-
-    <section class="content" id="tab-airlines" style="display:none">
-      <div class="card" style="display:grid; gap:14px">
-        <div class="section-title">Commercial</div>
-        <div class="grid" id="commercialList" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
-        <div class="section-title">Cargo</div>
-        <div class="grid" id="cargoList" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
+      <div class="content" id="tab-airlines" style="display: none;">
+        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Commercial Airlines</div>
+        <div id="commercialList"></div>
+        <div style="font-size: 1.1rem; font-weight: 600; margin: 20px 0 12px;">Cargo Airlines</div>
+        <div id="cargoList"></div>
       </div>
-    </section>
-
-    <section class="content" id="tab-shop" style="display:none">
-      <div class="card" style="display:grid; gap:14px">
-        <div class="section-title">Unlock Airlines</div>
-        <div class="grid" id="shopList" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <div class="modal" id="airlineModal">
-    <div class="modal-card" style="max-height: 80vh; display: flex; flex-direction: column;">
-      <div style="margin-bottom: 16px;">
-        <h2 style="margin:6px 0 12px">Choose Your Airline</h2>
-        <p class="muted" style="margin:0 0 12px">Pick one to start receiving tailored job offers. You can switch anytime.</p>
-      </div>
-      <div style="overflow-y: auto; flex: 1; padding-right: 8px;">
-        <div class="section-title">Commercial Airlines</div>
-        <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom: 20px;" id="modalCommercialAirlines"></div>
-        
-        <div class="section-title">Cargo Airlines</div>
-        <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px;" id="modalCargoAirlines"></div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1);">
-        <button class="btn ghost" id="closeModal" aria-label="Close modal">
-          <span class="btn-icon material-icons-round">close</span>
-          <span>Close</span>
-        </button>
+      <div class="content" id="tab-shop" style="display: none;">
+        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Airlines</div>
+        <div id="shopList"></div>
+        <div style="font-size: 1.1rem; font-weight: 600; margin: 20px 0 12px;">Fleet</div>
+        <div id="fleetList"></div>
       </div>
     </div>
   </div>
-
-  <!-- NEW: Ground Ops modal -->
-  <div class="modal" id="opsModal">
-    <div class="modal-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-        <h2 style="margin:0">Ground Operations</h2>
-        <div style="display:flex; gap:8px">
-          <button class="btn" style="background:linear-gradient(180deg, #4caf50, #2e7d32); border-color:#43a047; color:white" id="opsQuick">Quick Turn</button>
-          <button class="btn" style="background:linear-gradient(180deg, #2196F3, #1565C0); border-color:#1976D2; color:white" id="opsLoadSheet">Request Load Sheet</button>
-          <button class="btn" style="background:#2d2d2d; border-color:#444; color:#fff" id="opsClose">Close</button>
+  <div id="airlineModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="font-weight: 800; font-size: 1.2rem;">Select an Airline</div>
+        <button id="closeModal" class="btn">Close</button>
+      </div>
+      <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Commercial Airlines</div>
+      <div id="modalCommercialAirlines"></div>
+      <div style="font-size: 1.1rem; font-weight: 600; margin: 20px 0 12px;">Cargo Airlines</div>
+      <div id="modalCargoAirlines"></div>
+    </div>
+  </div>
+  <div id="opsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="font-weight: 800; font-size: 1.2rem;">Ground Operations</div>
+        <div class="btn-row">
+          <button id="opsQuick" class="btn">Quick Complete</button>
+          <button id="opsClose" class="btn">Close</button>
         </div>
       </div>
       <div id="opsContent"></div>
-      <div class="muted" id="opsHint" style="margin-top:12px"></div>
     </div>
   </div>
-
-  <div class="toast" id="toast"></div>
-
+  <div id="toast"></div>
   <script src="main.js"></script>
 </body>
 </html>
