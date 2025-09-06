@@ -1,80 +1,160 @@
 // --- Data ---
 const commercialAirlines = {
-  'Delta Air Lines': 'DAL',
-  'American Airlines': 'AAL',
-  'United Airlines': 'UAL',
-  'Southwest Airlines': 'SWA'
+  "Delta Airlines": "DAL",
+  "Spirit Wings": "NKS",
+  "British Airways": "BAW",
+  "Scandinavian Airlines": "SAS",
+  "American Airlines": "AAL",
+  "Lufthansa": "DLH"
 };
 
 const cargoAirlines = {
-  'FedEx Express': 'FDX',
-  'UPS Airlines': 'UPS'
+  "UPS Cargo": "UPS",
+  "FedEx Cargo": "FDX"
 };
 
 const unlockCosts = {
-  'DAL': 1000,
-  'AAL': 1000,
-  'UAL': 1000,
-  'SWA': 500,
-  'FDX': 0, // Free by default
-  'UPS': 750
+  "DAL": 1000,
+  "NKS": 500,
+  "BAW": 1000,
+  "SAS": 1000,
+  "AAL": 1000,
+  "DLH": 1000,
+  "UPS": 750,
+  "FDX": 0 // Free by default
 };
 
 const aircraftCosts = {
-  'A320': 500,
-  'B737': 450,
-  'B747': 1000,
-  'C208F': 200,
-  'MD11F': 800
+  "A220": 500,
+  "A320": 600,
+  "A330": 1000,
+  "A340": 1100,
+  "A350": 1200,
+  "A380": 1500,
+  "B717": 550,
+  "B727": 600,
+  "B737": 650,
+  "B747": 1200,
+  "B757": 800,
+  "B767": 900,
+  "B777": 1100,
+  "B787": 1000,
+  "B707": 700,
+  "MD11": 900,
+  "MD90": 750,
+  "CRJ700": 400,
+  "CONC": 2000,
+  "E190": 450,
+  "ATR72": 300,
+  "B757F": 800,
+  "B767F": 900,
+  "B777F": 1100,
+  "MD11F": 900,
+  "B747F": 1200,
+  "B727F": 600,
+  "B737BCF": 650,
+  "C208F": 200,
+  "ATR72F": 350
 };
 
 const airportGates = {
-  'RJTT': { commercial: ['1', '2', '3'], cargo: ['4', '5'] },
-  'KLAX': { commercial: ['A1', 'A2', 'B1'], cargo: ['C1', 'C2'] },
-  'EGLL': { commercial: ['T1', 'T2'], cargo: ['T3'] },
-  'YSSY': { commercial: ['G1', 'G2'], cargo: ['F1'] }
+  "IRFD": { commercial: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22], cargo: [21,22] },
+  "ITKO": { commercial: [1,2,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22], cargo: [17,18,19,20,21,22] },
+  "IPPH": { commercial: [1,2,3,4,5,6,11,12,13,14], cargo: [11,12,13,14] },
+  "IMLR": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
+  "IBTH": { any: true },
+  "IGRV": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
+  "ILAR": { commercial: [1,2,3,4,5,6,7,8,9], cargo: [8,9] },
+  "IPAP": { commercial: [1,2,3], cargo: [1,2,3] },
+  "ISAU": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
+  "IZOL": { commercial: [1,2,3,4,5,6,7,10,11,12,13,14], cargo: [10,11,12,13,14] },
+  "IBLT": { any: true },
+  "IDCS": { any: true },
+  "ILKL": { any: true },
+  "IHEN": { any: true }
 };
 
 const airports = {
-  'RJTT': { type: 'major', location: 'Tokyo', x: 100, y: 100 },
-  'KLAX': { type: 'major', location: 'Los Angeles', x: 200, y: 200 },
-  'EGLL': { type: 'major', location: 'London', x: 300, y: 300 },
-  'YSSY': { type: 'major', location: 'Sydney', x: 400, y: 400 }
+  "IRFD": { type: "major", location: "rockford island", x: 50.33, y: 57.59 },
+  "IMLR": { type: "major", location: "rockford island", x: 38.67, y: 52.92 },
+  "IBLT": { type: "small", location: "rockford island", x: 43.83, y: 53.45 },
+  "ISAU": { type: "regional", location: "sauthemptona island", x: 18.17, y: 62.28 },
+  "IGRV": { type: "major", location: "grindavik island", x: 20.67, y: 39.95 },
+  "ITKO": { type: "major", location: "tokyo island", x: 47.00, y: 17.25 },
+  "IDCS": { type: "small", location: "saba island", x: 48.17, y: 8.79 },
+  "IPPH": { type: "major", location: "perth island", x: 66.33, y: 27.25 },
+  "ILKL": { type: "small", location: "lukla island", x: 70.50, y: 28.29 },
+  "IZOL": { type: "major", location: "izolirani island", x: 84.67, y: 44.25 },
+  "ILAR": { type: "major", location: "larnaca", x: 70.67, y: 65.92 },
+  "IPAP": { type: "major", location: "paphos", x: 77.17, y: 67.62 },
+  "IHEN": { type: "small", location: "henstridge", x: 65.17, y: 73.45 },
+  "IBTH": { type: "small", location: "saint barthelemy", x: 57.83, y: 39.09 }
 };
 
 const airlineHubsAndRoutes = {
-  'DAL': { hub: 'KLAX', routes: ['RJTT', 'EGLL'], routeFrequency: 0.7, description: 'Major US airline' },
-  'AAL': { hub: 'KLAX', routes: ['YSSY', 'EGLL'], routeFrequency: 0.6, description: 'Global passenger carrier' },
-  'UAL': { hub: 'RJTT', routes: ['KLAX', 'YSSY'], routeFrequency: 0.6, description: 'International airline' },
-  'SWA': { hub: 'YSSY', routes: ['KLAX'], routeFrequency: 0.8, description: 'Low-cost carrier' },
-  'FDX': { hub: 'KLAX', routes: ['RJTT', 'EGLL', 'YSSY'], routeFrequency: 0.5, description: 'Global cargo delivery' },
-  'UPS': { hub: 'EGLL', routes: ['KLAX', 'RJTT'], routeFrequency: 0.5, description: 'Cargo and logistics' }
+  "DAL": { hub: "IRFD", routes: ["ITKO", "ILAR", "IZOL"], routeFrequency: 0.8, description: "Delta Airlines, a major global airline known for its extensive domestic and international network. Founded in 1924, it operates a large fleet of modern aircraft and is recognized for its operational reliability and customer service." },
+  "NKS": { hub: "IMLR", routes: ["IRFD", "ISAU", "IGRV", "ILAR"], routeFrequency: 0.8, description: "Spirit Wings, a rapidly growing low-cost carrier known for its ultra-low fares and no-frills approach. Despite its budget model, it maintains a strong focus on safety and operational efficiency." },
+  "BAW": { hub: "IPPH", routes: ["IRFD", "IMLR", "IBTH", "ILAR", "ITKO"], routeFrequency: 0.8, description: "British Airways, the flag carrier of the United Kingdom, with a rich history dating back to 1919. Known for its premium service and extensive long-haul network, connecting major cities worldwide." },
+  "SAS": { hub: "IGRV", routes: ["ISAU", "ITKO", "IMLR"], routeFrequency: 0.8, description: "Scandinavian Airlines, the flag carrier of Denmark, Norway, and Sweden. Founded in 1946, it's known for its efficient service and extensive network across Europe and the North Atlantic. In PTFS it is a more western airline focusing more on the colder islands in the game." },
+  "AAL": { hub: "ILAR", routes: ["ITKO", "IPPH", "ISAU", "IBTH", "IMLR", "IRFD", "IPAP"], routeFrequency: 0.8, description: "American Airlines, one of the world's largest airlines with a vast domestic and international network. Known for its modern fleet and comprehensive route map serving 9 different destinations in game." },
+  "DLH": { hub: "ITKO", routes: ["IRFD", "IPPH", "IZOL", "IGRV", "IBTH", "ILAR"], routeFrequency: 0.8, description: "Lufthansa, Germany's flag carrier and one of Europe's largest airlines. Renowned for its technical excellence, punctuality, and premium service across its global network in the game." },
+  "UPS": { hub: null, routes: [], routeFrequency: 0.0, description: "UPS Airlines, the cargo division of United Parcel Service. Operating one of the world's largest cargo fleets, it provides time-definite air freight services to over 15 destinations in the game." },
+  "FDX": { hub: null, routes: [], routeFrequency: 0.0, description: "FedEx Express, the world's largest cargo airline by fleet size. Known for its overnight shipping services and global logistics network, operating hundreds of flights daily in the game." }
 };
 
 const airlineColors = {
-  'DAL': { color: '#003087' },
-  'AAL': { color: '#1C2526' },
-  'UAL': { color: '#002244' },
-  'SWA': { color: '#F9B612' },
-  'FDX': { color: '#4B0082' },
-  'UPS': { color: '#351C15' }
+  "DAL": { bg: "#0033a0", color: "#ffffff" },
+  "NKS": { bg: "#000000", color: "#ffb81c" },
+  "BAW": { bg: "#01295c", color: "#ffffff" },
+  "SAS": { bg: "#003d73", color: "#ffffff" },
+  "AAL": { bg: "#0039aa", color: "#ffffff" },
+  "DLH": { bg: "#001a49", color: "#f9b000" },
+  "UPS": { bg: "#351c15", color: "#ffb500" },
+  "FDX": { bg: "#4d148c", color: "#ff6600" }
 };
 
 const aircraftData = {
-  'A320': { size: 'regional', range: 3300, capacity: { pax: 180, cargo: 0 } },
-  'B737': { size: 'regional', range: 3000, capacity: { pax: 160, cargo: 0 } },
-  'B747': { size: 'major', range: 8000, capacity: { pax: 400, cargo: 0 } },
-  'C208F': { size: 'small', range: 1000, capacity: { pax: 0, cargo: 1000 } },
-  'MD11F': { size: 'major', range: 7200, capacity: { pax: 0, cargo: 90000 } }
+  "ATR72": { size: "small", range: 15, capacity: { pax: 78, cargo: 800 } },
+  "C208F": { size: "small", range: 12, capacity: { pax: 0, cargo: 1000 } },
+  "CRJ700": { size: "small", range: 20, capacity: { pax: 78, cargo: 800 } },
+  "A220": { size: "regional", range: 35, capacity: { pax: 130, cargo: 1500 } },
+  "A320": { size: "regional", range: 30, capacity: { pax: 180, cargo: 1800 } },
+  "E190": { size: "regional", range: 28, capacity: { pax: 114, cargo: 1500 } },
+  "B717": { size: "regional", range: 25, capacity: { pax: 106, cargo: 1500 } },
+  "B727": { size: "regional", range: 30, capacity: { pax: 189, cargo: 1800 } },
+  "B737": { size: "regional", range: 32, capacity: { pax: 189, cargo: 1800 } },
+  "B737BCF": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
+  "B727F": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
+  "CONC": { size: "regional", range: 45, capacity: { pax: 100, cargo: 1500 } },
+  "A330": { size: "major", range: 70, capacity: { pax: 300, cargo: 3500 } },
+  "A340": { size: "major", range: 75, capacity: { pax: 340, cargo: 3500 } },
+  "A350": { size: "major", range: 80, capacity: { pax: 350, cargo: 3500 } },
+  "A380": { size: "major", range: 85, capacity: { pax: 555, cargo: 3500 } },
+  "B707": { size: "major", range: 65, capacity: { pax: 189, cargo: 3500 } },
+  "B747": { size: "major", range: 75, capacity: { pax: 416, cargo: 3500 } },
+  "B757": { size: "major", range: 60, capacity: { pax: 239, cargo: 3500 } },
+  "B767": { size: "major", range: 65, capacity: { pax: 290, cargo: 3500 } },
+  "B777": { size: "major", range: 80, capacity: { pax: 396, cargo: 3500 } },
+  "B787": { size: "major", range: 85, capacity: { pax: 336, cargo: 3500 } },
+  "MD11": { size: "major", range: 70, capacity: { pax: 410, cargo: 3500 } },
+  "MD90": { size: "major", range: 55, capacity: { pax: 172, cargo: 3500 } },
+  "B757F": { size: "major", range: 60, capacity: { pax: 0, cargo: 28000 } },
+  "B767F": { size: "major", range: 65, capacity: { pax: 0, cargo: 32000 } },
+  "B777F": { size: "major", range: 80, capacity: { pax: 0, cargo: 102000 } },
+  "MD11F": { size: "major", range: 70, capacity: { pax: 0, cargo: 90000 } },
+  "B747F": { size: "major", range: 75, capacity: { pax: 0, cargo: 113000 } },
+  "ATR72F": { size: "small", range: 15, capacity: { pax: 0, cargo: 7500 } }
 };
 
 const aircraftByAirline = {
-  'DAL': ['A320', 'B747'],
-  'AAL': ['A320', 'B737'],
-  'UAL': ['B737', 'B747'],
-  'SWA': ['B737'],
-  'FDX': ['C208F', 'MD11F'],
-  'UPS': ['MD11F']
+  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B727", "B747", "MD11", "MD90", "CRJ700"],
+  "NKS": ["A320"],
+  "BAW": ["A320", "A350", "A380", "B777", "B787", "B737", "B707", "B727", "B747", "B757", "B767", "CONC", "CRJ700"],
+  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737", "B747", "B757", "B767", "MD90"],
+  "AAL": ["A320", "B737", "B777", "B787", "B707", "B727", "B747", "B757", "B767", "MD11", "CRJ700"],
+  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B747", "B767", "B777", "B787", "B707", "B727", "B737"],
+  "UPS": ["B757F", "B767F", "MD11F", "B747F", "B727F"],
+  "FDX": ["B757F", "B767F", "B777F", "MD11F", "ATR72F", "C208F", "B727F", "B737BCF"]
 };
 
 // --- State ---
@@ -85,7 +165,7 @@ const state = {
   currency: 0,
   unlockedAirlines: ["FDX"],
   ownedAircraft: { "FDX": ["C208F"] },
-  flightPlans: {}, // { flightId: { callsign, aircraft, departing, arriving, validated: boolean } }
+  flightPlans: {},
   lastGenerated: 0
 };
 
@@ -794,23 +874,20 @@ function renderOpsModal(f) {
     const t = getTemplateForFlight(f); t.forEach(x => { f.ops.tasks[x.key]={status:'done', progress:100}; }); save(); renderOpsModal(f); toast('All ground ops complete');
   };
   el('#opsLoadSheet').onclick = () => {
-    const acData = aircraftData[f.aircraft] || { capacity: { pax: 0, cargo: 0 } };
+    const ls = getOrCreateLoadSheet(f);
     const isCargo = airlineIsCargo(f.code);
-    const capacity = isCargo ? acData.capacity.cargo : acData.capacity.pax;
-    const load = Math.round(capacity * (0.7 + Math.random() * 0.25));
-    const fuel = Math.round((isCargo ? 5000 : 3000) + Math.random() * 2000);
-    const totalWeight = isCargo ? load + fuel : load * 80 + fuel;
+    const totalWeight = isCargo ? ls.cargo + ls.fuel : ls.passengers * 80 + ls.cargo + ls.fuel;
     const loadSheet = `
       <div class="load-sheet">
         <h3>Load Sheet for ${f.code}${f.flight.replace(f.code,'')}</h3>
         <div class="load-sheet-grid">
           <div class="load-sheet-item">
             <span class="label">${isCargo ? 'Cargo' : 'Passengers'}</span>
-            <span class="value">${load}${isCargo ? 'kg' : ''}</span>
+            <span class="value">${isCargo ? ls.cargo : ls.passengers}${isCargo ? 'kg' : ''}</span>
           </div>
           <div class="load-sheet-item">
             <span class="label">Fuel</span>
-            <span class="value">${fuel}kg</span>
+            <span class="value">${ls.fuel}kg</span>
           </div>
           <div class="load-sheet-item">
             <span class="label">Total Weight</span>
@@ -818,11 +895,11 @@ function renderOpsModal(f) {
           </div>
           <div class="load-sheet-item total">
             <span class="label">Capacity Utilization</span>
-            <span class="value">${Math.round((load / capacity) * 100)}%</span>
+            <span class="value">${Math.round((isCargo ? ls.cargo / acData.capacity.cargo : ls.passengers / acData.capacity.pax) * 100)}%</span>
           </div>
         </div>
         <div class="load-sheet-progress">
-          <div class="load-sheet-progress-bar" style="width:${Math.round((load / capacity) * 100)}%"></div>
+          <div class="load-sheet-progress-bar" style="width:${Math.round((isCargo ? ls.cargo / acData.capacity.cargo : ls.passengers / acData.capacity.pax) * 100)}%"></div>
         </div>
       </div>`;
     cont.innerHTML = loadSheet + cont.innerHTML;
@@ -893,6 +970,32 @@ function removeFlight(id) {
   save();
   renderFlights();
   toast('Flight removed');
+}
+
+// --- Load Sheet ---
+function getOrCreateLoadSheet(f) {
+  if (!f.loadSheet) {
+    const seed = hashCode(`${f.id || f.flight}-${f.from}-${f.to}-${f.aircraft}`);
+    const isCargo = airlineIsCargo(f.code);
+    const distance = calculateDistance(f.from, f.to);
+    const acData = aircraftData[f.aircraft] || { size: 'regional', capacity: { pax: 150, cargo: 1800 } };
+
+    const paxCap = isCargo ? 0 : acData.capacity.pax;
+    const occMin = Math.max(40, Math.min(85, 50 + Math.round(distance)));
+    const occ = seededBetween(occMin, 95, seed % 97);
+    const passengers = isCargo ? 0 : Math.min(paxCap, Math.max(0, Math.round(paxCap * (occ / 100))));
+
+    const cargoBase = isCargo ? acData.capacity.cargo : acData.capacity.cargo / 2;
+    const cargoVar = seededBetween(-Math.round(cargoBase * 0.15), Math.round(cargoBase * 0.15), (seed >> 1) % 97);
+    const cargo = Math.max(0, cargoBase + cargoVar);
+
+    const minutes = f.minutes || estimateBlock(f.from, f.to);
+    const burnPerMin = acData.size === 'small' ? 35 : acData.size === 'regional' ? 90 : 180;
+    const fuel = Math.max(3000, Math.round(burnPerMin * minutes * 1.2));
+
+    f.loadSheet = { passengers, cargo, fuel };
+  }
+  return f.loadSheet;
 }
 
 // --- Shop and Airlines ---
