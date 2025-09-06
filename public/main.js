@@ -76,6 +76,7 @@ const unlockCosts = {
 };
 
 const aircraftCosts = {
+  // PAX Aircraft
   "A220": 500,
   "A320": 600,
   "A330": 1000,
@@ -83,29 +84,22 @@ const aircraftCosts = {
   "A350": 1200,
   "A380": 1500,
   "B717": 550,
-  "B727": 600,
   "B737": 650,
   "B747": 1200,
   "B757": 800,
   "B767": 900,
   "B777": 1100,
   "B787": 1000,
-  "B707": 700,
-  "MD11": 900,
-  "MD90": 750,
-  "CRJ700": 400,
-  "CONC": 2000,
   "E190": 450,
   "ATR72": 300,
+  // Cargo Aircraft
+  "C208F": 200,
+  "ATR72F": 350,
+  "B737F": 650,
   "B757F": 800,
   "B767F": 900,
   "B777F": 1100,
-  "MD11F": 900,
-  "B747F": 1200,
-  "B727F": 600,
-  "B737BCF": 650,
-  "C208F": 200,
-  "ATR72F": 350
+  "B747F": 1200
 };
 
 const airportGates = {
@@ -165,47 +159,41 @@ const airlineColors = {
 };
 
 const aircraftData = {
-  "ATR72": { size: "small", range: 15, capacity: { pax: 78, cargo: 800 } },
-  "C208F": { size: "small", range: 12, capacity: { pax: 0, cargo: 1000 } },
-  "CRJ700": { size: "small", range: 20, capacity: { pax: 78, cargo: 800 } },
-  "A220": { size: "regional", range: 35, capacity: { pax: 130, cargo: 1500 } },
-  "A320": { size: "regional", range: 30, capacity: { pax: 180, cargo: 1800 } },
-  "E190": { size: "regional", range: 28, capacity: { pax: 114, cargo: 1500 } },
-  "B717": { size: "regional", range: 25, capacity: { pax: 106, cargo: 1500 } },
-  "B727": { size: "regional", range: 30, capacity: { pax: 189, cargo: 1800 } },
-  "B737": { size: "regional", range: 32, capacity: { pax: 189, cargo: 1800 } },
-  "B737BCF": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
-  "B727F": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
-  "CONC": { size: "regional", range: 45, capacity: { pax: 100, cargo: 1500 } },
-  "A330": { size: "major", range: 70, capacity: { pax: 300, cargo: 3500 } },
-  "A340": { size: "major", range: 75, capacity: { pax: 340, cargo: 3500 } },
-  "A350": { size: "major", range: 80, capacity: { pax: 350, cargo: 3500 } },
-  "A380": { size: "major", range: 85, capacity: { pax: 555, cargo: 3500 } },
-  "B707": { size: "major", range: 65, capacity: { pax: 189, cargo: 3500 } },
-  "B747": { size: "major", range: 75, capacity: { pax: 416, cargo: 3500 } },
-  "B757": { size: "major", range: 60, capacity: { pax: 239, cargo: 3500 } },
-  "B767": { size: "major", range: 65, capacity: { pax: 290, cargo: 3500 } },
-  "B777": { size: "major", range: 80, capacity: { pax: 396, cargo: 3500 } },
-  "B787": { size: "major", range: 85, capacity: { pax: 336, cargo: 3500 } },
-  "MD11": { size: "major", range: 70, capacity: { pax: 410, cargo: 3500 } },
-  "MD90": { size: "major", range: 55, capacity: { pax: 172, cargo: 3500 } },
-  "B757F": { size: "major", range: 60, capacity: { pax: 0, cargo: 28000 } },
-  "B767F": { size: "major", range: 65, capacity: { pax: 0, cargo: 32000 } },
-  "B777F": { size: "major", range: 80, capacity: { pax: 0, cargo: 102000 } },
-  "MD11F": { size: "major", range: 70, capacity: { pax: 0, cargo: 90000 } },
-  "B747F": { size: "major", range: 75, capacity: { pax: 0, cargo: 113000 } },
-  "ATR72F": { size: "small", range: 15, capacity: { pax: 0, cargo: 7500 } }
+  // PAX Aircraft
+  "A220": { type: "pax", size: "regional", range: 35, capacity: { pax: 130, cargo: 1500 } },
+  "A320": { type: "pax", size: "regional", range: 30, capacity: { pax: 180, cargo: 1800 } },
+  "A330": { type: "pax", size: "major", range: 70, capacity: { pax: 300, cargo: 3500 } },
+  "A340": { type: "pax", size: "major", range: 75, capacity: { pax: 340, cargo: 3500 } },
+  "A350": { type: "pax", size: "major", range: 80, capacity: { pax: 350, cargo: 3500 } },
+  "A380": { type: "pax", size: "major", range: 85, capacity: { pax: 555, cargo: 3500 } },
+  "B717": { type: "pax", size: "regional", range: 25, capacity: { pax: 106, cargo: 1500 } },
+  "B737": { type: "pax", size: "regional", range: 32, capacity: { pax: 189, cargo: 1800 } },
+  "B747": { type: "pax", size: "major", range: 75, capacity: { pax: 416, cargo: 3500 } },
+  "B757": { type: "pax", size: "major", range: 60, capacity: { pax: 239, cargo: 3500 } },
+  "B767": { type: "pax", size: "major", range: 65, capacity: { pax: 290, cargo: 3500 } },
+  "B777": { type: "pax", size: "major", range: 80, capacity: { pax: 396, cargo: 3500 } },
+  "B787": { type: "pax", size: "major", range: 85, capacity: { pax: 336, cargo: 3500 } },
+  "E190": { type: "pax", size: "regional", range: 28, capacity: { pax: 114, cargo: 1500 } },
+  "ATR72": { type: "pax", size: "small", range: 15, capacity: { pax: 78, cargo: 800 } },
+  // Cargo Aircraft
+  "C208F": { type: "cargo", size: "small", range: 12, capacity: { pax: 0, cargo: 1000 } },
+  "ATR72F": { type: "cargo", size: "small", range: 15, capacity: { pax: 0, cargo: 7500 } },
+  "B737F": { type: "cargo", size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
+  "B757F": { type: "cargo", size: "major", range: 60, capacity: { pax: 0, cargo: 28000 } },
+  "B767F": { type: "cargo", size: "major", range: 65, capacity: { pax: 0, cargo: 32000 } },
+  "B777F": { type: "cargo", size: "major", range: 80, capacity: { pax: 0, cargo: 102000 } },
+  "B747F": { type: "cargo", size: "major", range: 75, capacity: { pax: 0, cargo: 113000 } }
 };
 
 const aircraftByAirline = {
-  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B727", "B747", "MD11", "MD90", "CRJ700"],
-  "NKS": ["A320"],
-  "BAW": ["A320", "A350", "A380", "B777", "B787", "B737", "B707", "B727", "B747", "B757", "B767", "CONC", "CRJ700"],
-  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737", "B747", "B757", "B767", "MD90"],
-  "AAL": ["A320", "B737", "B777", "B787", "B707", "B727", "B747", "B757", "B767", "MD11", "CRJ700"],
-  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B747", "B767", "B777", "B787", "B707", "B727", "B737"],
-  "UPS": ["B757F", "B767F", "MD11F", "B747F", "B727F"],
-  "FDX": ["B757F", "B767F", "B777F", "MD11F", "ATR72F", "C208F", "B727F", "B737BCF"]
+  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B747", "E190"],
+  "NKS": ["A320", "B737"],
+  "BAW": ["A320", "A350", "A380", "B737", "B747", "B757", "B767", "B777", "B787"],
+  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737"],
+  "AAL": ["A320", "B737", "B747", "B757", "B767", "B777", "B787"],
+  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B737", "B747", "B767", "B777", "B787"],
+  "UPS": ["B757F", "B767F", "B747F"],
+  "FDX": ["C208F", "ATR72F", "B737F", "B757F", "B767F", "B777F", "B747F"]
 };
 
 // --- State ---
@@ -407,10 +395,11 @@ function calculateDistance(fromIcao, toIcao) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function findSuitableAircraft(fleet, distance, destType, originType) {
+function findSuitableAircraft(fleet, distance, destType, originType, isCargo) {
   const suitable = fleet.filter(ac => {
     const acData = aircraftData[ac];
     if (!acData) return false;
+    if (acData.type !== (isCargo ? 'cargo' : 'pax')) return false;
     const canServeOrigin = typeAllowance[acData.size].has(originType);
     const canServeDest = typeAllowance[acData.size].has(destType);
     return acData.range >= distance * 0.9 && canServeOrigin && canServeDest;
@@ -497,7 +486,7 @@ function generateOffers(n=12) {
             const acData = aircraftData[ac];
             const canServeOrigin = typeAllowance[acData.size].has(o.type);
             const canServeDest = typeAllowance[acData.size].has(dest.type);
-            return canServeOrigin && canServeDest;
+            return acData.type === (isCargo ? 'cargo' : 'pax') && canServeOrigin && canServeDest;
           });
         });
         if (potentialDests.length === 0) continue;
@@ -505,7 +494,7 @@ function generateOffers(n=12) {
       }
       
       distance = calculateDistance(o.icao, d.icao);
-      aircraft = findSuitableAircraft(fleet, distance, d.type, o.type);
+      aircraft = findSuitableAircraft(fleet, distance, d.type, o.type, isCargo);
       attempts++;
     } while ((!aircraft || o.icao === d.icao) && attempts < 50);
     
@@ -1257,7 +1246,7 @@ function renderShop() {
         <div class="btn-row">
           ${owned ? 
             `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
+            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost || acData.type !== (isCargo ? 'cargo' : 'pax') ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
         </div>
       </div>`;
   };
