@@ -396,14 +396,21 @@ function calculateDistance(fromIcao, toIcao) {
 }
 
 function findSuitableAircraft(fleet, distance, destType, originType, isCargo) {
+  console.log(`Finding suitable aircraft for distance=${distance}, destType=${destType}, originType=${originType}, isCargo=${isCargo}, fleet=${fleet}`);
   const suitable = fleet.filter(ac => {
     const acData = aircraftData[ac];
-    if (!acData) return false;
+    if (!acData) {
+      console.warn(`No aircraft data for ${ac}`);
+      return false;
+    }
     if (acData.type !== (isCargo ? 'cargo' : 'pax')) return false;
     const canServeOrigin = typeAllowance[acData.size].has(originType);
     const canServeDest = typeAllowance[acData.size].has(destType);
-    return acData.range >= distance * 0.9 && canServeOrigin && canServeDest;
+    const isSuitable = acData.range >= distance * 0.9 && canServeOrigin && canServeDest;
+    console.log(`Checking ${ac}: type=${acData.type}, range=${acData.range}, canServeOrigin=${canServeOrigin}, canServeDest=${canServeDest}, isSuitable=${isSuitable}`);
+    return isSuitable;
   });
+  console.log(`Suitable aircraft: ${suitable}`);
   return suitable.length ? pick(suitable) : null;
 }
 
@@ -419,8 +426,12 @@ const typeAllowance = {
 };
 
 function generateOffers(n=12) {
+  console.log('Generating offers...');
   const selected = state.airline; 
-  if (!selected) return [];
+  if (!selected) {
+    console.warn('No airline selected');
+    return [];
+  }
   
   const types = Array.from(document.querySelectorAll('.flt-type:checked')).map(i => i.value);
   const allAirports = airportEntries();
@@ -428,7 +439,11 @@ function generateOffers(n=12) {
   
   const isCargo = airlineIsCargo(selected.code);
   const fleet = state.ownedAircraft[selected.code] || [];
-  if (fleet.length === 0) return [];
+  console.log(`Airline: ${selected.code}, isCargo: ${isCargo}, fleet: ${fleet}`);
+  if (fleet.length === 0) {
+    console.warn('No aircraft in fleet');
+    return [];
+  }
   
   const airlineInfo = airlineHubsAndRoutes[selected.code] || { hub: null, routes: [], routeFrequency: 0 };
   const { hub, routes, routeFrequency } = airlineInfo;
@@ -445,6 +460,7 @@ function generateOffers(n=12) {
     fleetCapabilities.regional = fleetCapabilities.regional || minType === 'regional' || minType === 'small';
     fleetCapabilities.major = true;
   });
+  console.log(`Fleet capabilities: ${JSON.stringify(fleetCapabilities)}`);
   
   const pool = allAirports.filter(a => 
     types.includes(a.type) && 
@@ -453,7 +469,10 @@ function generateOffers(n=12) {
      (a.type === 'major' && fleetCapabilities.major))
   );
   
-  if (pool.length < 2) return [];
+  if (pool.length < 2) {
+    console.warn('Not enough airports in pool');
+    return [];
+  }
 
   const now = new Date();
   const minMinutes = 10;
@@ -498,7 +517,10 @@ function generateOffers(n=12) {
       attempts++;
     } while ((!aircraft || o.icao === d.icao) && attempts < 50);
     
-    if (!aircraft) continue;
+    if (!aircraft) {
+      console.warn(`No suitable aircraft found after ${attempts} attempts`);
+      continue;
+    }
     
     const baseSpeed = aircraftData[aircraft].range / 2.5;
     const minutes = Math.max(8, Math.min(22, Math.round(distance * 12 / baseSpeed) + 6));
@@ -532,6 +554,7 @@ function generateOffers(n=12) {
     };
     offers.push(offer);
   }
+  console.log(`Generated ${offers.length} offers`);
   return offers;
 }
 
@@ -892,10 +915,18 @@ function renderOpsModal(f) {
   const tpl = getTemplateForFlight(f);
   const cont = el('#opsContent');
   const hint = el('#opsHint');
-  if (!cont || !hint) return;
+  const header = el('#opsHeader');
+  if (!cont || !hint || !header) return;
 
   const acData = aircraftData[f.aircraft] || {};
   const allDone = tpl.every(t => f.ops.tasks[t.key].status === 'done');
+
+  header.innerHTML = `
+    <div class="btn-row">
+      <button class="btn good" id="opsQuick"><span class="btn-icon material-icons-round">fast_forward</span><span>Quick Turn</span></button>
+      <button class="btn primary" id="opsLoadSheet"><span class="btn-icon material-icons-round">description</span><span>Request Load Sheet</span></button>
+      <button class="btn warn" id="opsClose"><span class="btn-icon material-icons-round">close</span><span>Close</span></button>
+    </div>`;
 
   cont.innerHTML = `
     <div class="banner"><div>
@@ -982,6 +1013,9 @@ function renderOpsModal(f) {
       if (closeLoadSheetBtn) closeLoadSheetBtn.onclick = () => renderOpsModal(f);
     };
   }
+
+  const closeOpsBtn = el('#opsClose');
+  if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
 }
 
 function startTask(f, key) {
@@ -1076,124 +1110,8 @@ function getOrCreateLoadSheet(f) {
 }
 
 // --- Shop and Airlines ---
-function renderAirlines() {
-  const commercialEl = el('#commercialList');
-  const cargoEl = el('#cargoList');
-
-  const renderInfoCard = (name, code) => {
-    const color = airlineColors[code] || {};
-    const isCargo = airlineIsCargo(code);
-    const info = airlineHubsAndRoutes[code] || { hub: null, routes: [], description: '' };
-    const hub = info.hub || 'None';
-    const routes = (info.routes && info.routes.length) ? info.routes.join(', ') : 'Various';
-    const fleet = (state.ownedAircraft[code] || []).map(ac => {
-      const acData = aircraftData[ac] || {};
-      const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
-      return `<span class="fleet-tag" title="${ac}"><span class="material-icons-round" style="font-size: 1em;">${typeIcon}</span> ${ac}</span>`;
-    }).join('');
-
-    return `
-      <div class="card airline-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div class="airline-logo-container">
-            <img src="airline_icons/${code}.png" alt="${name} Logo" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${color.color||'#fff'};font-weight:bold;font-size:0.9rem\\'>${code}</div>'">
-          </div>
-          <div style="min-width:0; flex:1">
-            <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
-            <div class="muted" style="font-size:.85rem">ICAO <span class="highlight">•</span> <span class="code">${code}</span> · <span class="tag ${isCargo ? 'tag-cargo' : 'tag-pax'}">${isCargo ? 'Cargo' : 'Passenger'}</span></div>
-          </div>
-        </div>
-        <div class="muted" style="font-size:.9rem; line-height:1.5; margin-bottom:10px;">${info.description || 'No description available.'}</div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-label">Hub</div>
-            <div class="info-value"><span class="highlight">${hub}</span></div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Main Routes</div>
-            <div class="info-value" style="line-height:1.5">${routes}</div>
-          </div>
-          <div class="info-item" style="grid-column:1 / -1">
-            <div class="info-label">Fleet</div>
-            <div class="info-value" data-field="fleet"><div class="fleet-list">${fleet}</div></div>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  commercialEl.innerHTML = Object.entries(commercialAirlines).map(([name, code]) => renderInfoCard(name, code)).join('');
-  cargoEl.innerHTML = Object.entries(cargoAirlines).map(([name, code]) => renderInfoCard(name, code)).join('');
-  renderModalAirlines();
-}
-
-function renderModalAirlines() {
-  const commercialEl = el('#modalCommercialAirlines');
-  const cargoEl = el('#modalCargoAirlines');
-  
-  const renderPill = (name, code) => {
-    const isUnlocked = state.unlockedAirlines.includes(code);
-    const cost = unlockCosts[code] || 0;
-    let buttonHtml = '';
-    if (isUnlocked) {
-      buttonHtml = `<button class="btn primary select-airline" data-code="${code}" data-name="${name}"><span class="btn-icon material-icons-round">check</span><span>Select</span></button>`;
-    } else if (code !== 'FDX') {
-      buttonHtml = `<button class="btn primary buy-airline" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">lock_open</span><span>Unlock for $${cost}</span></button>`;
-    }
-    return `
-      <div class="airline-pill ${isUnlocked ? '' : 'locked'}" data-code="${code}" data-name="${name}">
-        <div class="airline-logo-container">
-          <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
-        </div>
-        <div style="flex:1; min-width:0">
-          <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${name}</div>
-          <div class="muted" style="font-size:.85rem">${code}</div>
-        </div>
-        ${buttonHtml}
-      </div>`;
-  };
-  
-  commercialEl.innerHTML = Object.entries(commercialAirlines).map(([name, code]) => renderPill(name, code)).join('');
-  cargoEl.innerHTML = Object.entries(cargoAirlines).map(([name, code]) => renderPill(name, code)).join('');
-  
-  document.querySelectorAll('.select-airline').forEach(btn => {
-    btn.onclick = () => {
-      const code = btn.dataset.code;
-      const name = btn.dataset.name;
-      state.airline = { code, name };
-      state.offers = [];
-      state.flightPlans = {};
-      state.lastGenerated = 0;
-      save();
-      closeAirlineModal();
-      renderSelectedAirline();
-      renderOffers();
-      renderShop();
-      toast(`Selected ${name}`);
-    };
-  });
-  
-  document.querySelectorAll('.buy-airline').forEach(btn => {
-    btn.onclick = () => {
-      const code = btn.dataset.code;
-      const cost = unlockCosts[code];
-      if (state.currency >= cost) {
-        state.currency -= cost;
-        state.unlockedAirlines.push(code);
-        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
-        save();
-        updateCurrencyDisplay();
-        renderModalAirlines();
-        renderShop();
-        renderAirlines();
-        toast(`Unlocked ${airlineList()[code]} for $${cost}`);
-      } else {
-        toast('Not enough currency');
-      }
-    };
-  });
-}
-
 function renderShop() {
+  console.log('Rendering shop...');
   const shopEl = el('#shopList');
   const fleetEl = el('#fleetList');
   const allAirlines = { ...commercialAirlines, ...cargoAirlines };
@@ -1234,6 +1152,8 @@ function renderShop() {
     const owned = (state.ownedAircraft[code] || []).includes(aircraft);
     const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
     const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
+    const isCorrectType = acData.type === (isCargo ? 'cargo' : 'pax');
+    console.log(`Rendering aircraft ${aircraft} for ${code}: owned=${owned}, isCorrectType=${isCorrectType}`);
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
@@ -1246,7 +1166,7 @@ function renderShop() {
         <div class="btn-row">
           ${owned ? 
             `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost || acData.type !== (isCargo ? 'cargo' : 'pax') ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
+            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost || !isCorrectType ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
         </div>
       </div>`;
   };
@@ -1254,11 +1174,17 @@ function renderShop() {
   const availableAircraft = state.unlockedAirlines
     .filter(code => aircraftByAirline[code])
     .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
+    .filter(({ aircraft, code }) => {
+      const isCargo = airlineIsCargo(code);
+      const acData = aircraftData[aircraft] || {};
+      return acData.type === (isCargo ? 'cargo' : 'pax');
+    })
     .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
 
-  fleetEl.innerHTML = availableAircraft
+  console.log(`Available aircraft for shop: ${JSON.stringify(availableAircraft)}`);
+  fleetEl.innerHTML = availableAircraft.length ? availableAircraft
     .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
-    .join('');
+    .join('') : '<div class="muted">No aircraft available. Unlock airlines or purchase aircraft.</div>';
 
   shopEl.querySelectorAll('.buy-airline').forEach(btn => {
     btn.onclick = () => {
