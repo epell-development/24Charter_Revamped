@@ -6,7 +6,6 @@ function init() {
   renderOffers();
   renderAirlines();
   renderShop();
-  initFlightPlanListener();
 
   els('.tab').forEach(tab => {
     tab.onclick = () => switchTab(tab.dataset.tab);
@@ -216,7 +215,6 @@ const state = {
   currency: 0,
   unlockedAirlines: ["FDX"],
   ownedAircraft: { "FDX": ["C208F"] },
-  flightPlans: {},
   lastGenerated: 0
 };
 
@@ -245,7 +243,6 @@ function save() {
   setCookie('currency', state.currency.toString());
   setCookie('unlockedAirlines', JSON.stringify(state.unlockedAirlines));
   setCookie('ownedAircraft', JSON.stringify(state.ownedAircraft));
-  setCookie('flightPlans', JSON.stringify(state.flightPlans));
 }
 
 function loadState() {
@@ -254,7 +251,6 @@ function loadState() {
   const currencyCookie = getCookie('currency');
   const unlockedAirlinesCookie = getCookie('unlockedAirlines');
   const ownedAircraftCookie = getCookie('ownedAircraft');
-  const flightPlansCookie = getCookie('flightPlans');
 
   if (airlineCookie) state.airline = JSON.parse(airlineCookie);
   if (flightsCookie) state.flights = JSON.parse(flightsCookie);
@@ -263,66 +259,9 @@ function loadState() {
   else state.unlockedAirlines = ["FDX"];
   if (ownedAircraftCookie) state.ownedAircraft = JSON.parse(ownedAircraftCookie);
   else state.ownedAircraft = { "FDX": ["C208F"] };
-  if (flightPlansCookie) state.flightPlans = JSON.parse(flightPlansCookie);
-  else state.flightPlans = {};
+
 }
 
-// --- 24data API Integration ---
-let sseFlightPlans = null;
-
-function initFlightPlanListener() {
-  try {
-    sseFlightPlans = new EventSource('/api/flight-plans');
-    sseFlightPlans.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.t === 'FLIGHT_PLAN') {
-        const fp = data.d;
-        const flight = state.flights.find(f => {
-          const callsign = `${f.code}${f.flight.replace(f.code, '')}`;
-          return callsign === fp.callsign &&
-                 fp.aircraft === f.aircraft &&
-                 fp.departing === f.from &&
-                 fp.arriving === f.to;
-        });
-        if (flight) {
-          state.flightPlans[flight.id] = {
-            callsign: fp.callsign,
-            aircraft: fp.aircraft,
-            departing: fp.departing,
-            arriving: fp.arriving,
-            validated: true
-          };
-          save();
-          renderFlights();
-          toast(`Flight plan validated for ${fp.callsign}`);
-        }
-      }
-    };
-    sseFlightPlans.onerror = () => {
-      toast('Error connecting to flight plan updates. Retrying...');
-      setTimeout(initFlightPlanListener, 5000);
-    };
-  } catch (e) {
-    console.error('Failed to initialize flight plan listener:', e);
-    toast('Flight plan updates unavailable. Check server status.');
-    setTimeout(initFlightPlanListener, 5000);
-  }
-}
-
-async function checkAircraftOnGround(flight) {
-  try {
-    const callsign = `${flight.code}${flight.flight.replace(flight.code, '')}`;
-    const response = await fetch('/api/acft-data');
-    if (!response.ok) throw new Error('Failed to fetch aircraft data');
-    const aircraftData = await response.json();
-    const aircraft = aircraftData[callsign];
-    return aircraft && aircraft.isOnGround === true;
-  } catch (e) {
-    console.error('Error fetching aircraft data:', e);
-    toast('Unable to verify aircraft status. Check server connectivity.');
-    return false;
-  }
-}
 
 // --- Helpers ---
 function getRandomGate(airportIcao, isCargo = false) {
@@ -657,7 +596,6 @@ function renderSelectedAirline() {
   if (clearBtn) clearBtn.onclick = () => {
     state.airline = null; 
     state.offers = [];
-    state.flightPlans = {};
     save();
     renderSelectedAirline(); 
     renderOffers();
@@ -800,9 +738,6 @@ function renderFlights() {
     ensureOps(f);
     const acData = aircraftData[f.aircraft] || {};
     const capacityText = airlineIsCargo(f.code) ? `${acData.capacity.cargo}kg` : `${acData.capacity.pax} pax`;
-    const flightPlan = state.flightPlans[f.id] || {};
-    const isFlightPlanValid = flightPlan.validated;
-    const flightPlanStatus = isFlightPlanValid ? 'Valid' : 'Pending';
     return `
       <tr data-flight-id="${f.id}">
         <td><b>${f.code}${f.flight.replace(f.code,'')}</b></td>
@@ -814,11 +749,10 @@ function renderFlights() {
         <td>${fmtTime(new Date(f.depISO))} → ${fmtTime(new Date(f.arrISO))}</td>
         <td>${f.aircraft} (${capacityText})</td>
         <td><span class="status ${f.status}">${f.status[0].toUpperCase()+f.status.slice(1)}</span></td>
-        <td><span class="chip ${isFlightPlanValid ? 'good' : 'warn'}">${flightPlanStatus}</span></td>
         <td>
           <div class="btn-row">
             ${f.status==='scheduled' ? `<button class="btn good" data-ops="${f.id}"><span class="btn-icon material-icons-round">tune</span><span>Ground Ops</span></button>` : ''}
-            ${f.status==='scheduled'? `<button class="btn primary" data-start="${f.id}" ${!isFlightPlanValid || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done' ? 'disabled' : ''}><span class="btn-icon material-icons-round">flight_takeoff</span><span>Start</span></button>`:''}
+            ${f.status==='scheduled'? `<button class="btn primary" data-start="${f.id}" ${!f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done' ? 'disabled' : ''}><span class="btn-icon material-icons-round">flight_takeoff</span><span>Start</span></button>`:''}
             ${f.status==='enroute'? `<button class="btn primary" data-complete="${f.id}"><span class="btn-icon material-icons-round">check_circle</span><span>Complete</span></button>`:''}
             ${f.status!=='completed'? `<button class="btn warn" data-cancel="${f.id}"><span class="btn-icon material-icons-round">cancel</span><span>Cancel</span></button>`:''}
           </div>
@@ -829,10 +763,6 @@ function renderFlights() {
   body.querySelectorAll('[data-start]').forEach(b => b.onclick = async () => {
     const f = state.flights.find(x => x.id === b.dataset.start);
     if (!f) return;
-    if (!state.flightPlans[f.id]?.validated) {
-      toast('Awaiting valid flight plan');
-      return;
-    }
     if (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
       toast('Complete ground operations before starting');
       return;
@@ -1037,10 +967,6 @@ function completeTask(f, key) {
 function updateFlight(id, newStatus) {
   const f = state.flights.find(x => x.id === id); if (!f) return;
   if (newStatus === 'enroute') {
-    if (!state.flightPlans[f.id]?.validated) {
-      toast('Awaiting valid flight plan');
-      return;
-    }
     if (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
       toast('Complete ground operations before starting');
       return;
@@ -1054,7 +980,6 @@ function updateFlight(id, newStatus) {
 
 function removeFlight(id) {
   state.flights = state.flights.filter(x => x.id !== id);
-  delete state.flightPlans[id];
   save();
   renderFlights();
   toast('Flight removed');
