@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "api/flight-plans.js": {
+      "memory": 128,
+      "maxDuration": 60
+    },
+    "api/acft-data.js": {
+      "memory": 128,
+      "maxDuration": 10
+    },
+    "api/submit-flight-plan.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  },
+  "routes": [
+    { "src": "/api/flight-plans", "dest": "/api/flight-plans.js" },
+    { "src": "/api/acft-data", "dest": "/api/acft-data.js" },
+    { "src": "/api/submit-flight-plan", "dest": "/api/submit-flight-plan.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

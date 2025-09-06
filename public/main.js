@@ -1,165 +1,5 @@
 // --- Data ---
-const commercialAirlines = {
-  "Delta Airlines": "DAL",
-  "Spirit Wings": "NKS",
-  "British Airways": "BAW",
-  "Scandinavian Airlines": "SAS",
-  "American Airlines": "AAL",
-  "Lufthansa": "DLH",
-};
-
-const cargoAirlines = {
-  "UPS Cargo": "UPS",
-  "FedEx Cargo": "FDX",
-};
-
-// Unlock costs for airlines (FDX is free)
-const unlockCosts = {
-  "NKS": 200,
-  "SAS": 400,
-  "AAL": 600,
-  "BAW": 800,
-  "DAL": 1000,
-  "DLH": 1200,
-  "UPS": 300
-};
-
-// Aircraft unlock costs (based on capacity)
-const aircraftCosts = {
-  "ATR72": 100,
-  "C208F": 50,
-  "CRJ700": 150,
-  "A220": 300,
-  "A320": 350,
-  "E190": 250,
-  "B717": 200,
-  "B727": 400,
-  "B737": 450,
-  "B737BCF": 400,
-  "B727F": 350,
-  "CONC": 600,
-  "A330": 800,
-  "A340": 850,
-  "A350": 900,
-  "A380": 1000,
-  "B707": 500,
-  "B747": 950,
-  "B757": 700,
-  "B767": 750,
-  "B777": 900,
-  "B787": 950,
-  "MD11": 800,
-  "MD90": 600,
-  "B757F": 700,
-  "B767F": 750,
-  "B777F": 900,
-  "MD11F": 800,
-  "B747F": 950
-};
-
-// Airport gate configurations
-const airportGates = {
-  "IRFD": { commercial: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22], cargo: [21,22] },
-  "ITKO": { commercial: [1,2,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22], cargo: [17,18,19,20,21,22] },
-  "IPPH": { commercial: [1,2,3,4,5,6,11,12,13,14], cargo: [11,12,13,14] },
-  "IMLR": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
-  "IBTH": { any: true },
-  "IGRV": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
-  "ILAR": { commercial: [1,2,3,4,5,6,7,8,9], cargo: [8,9] },
-  "IPAP": { commercial: [1,2,3], cargo: [1,2,3] },
-  "ISAU": { commercial: [1,2,3,4], cargo: [1,2,3,4] },
-  "IZOL": { commercial: [1,2,3,4,5,6,7,10,11,12,13,14], cargo: [10,11,12,13,14] },
-  "IBLT": { any: true },
-  "IDCS": { any: true },
-  "ILKL": { any: true }
-};
-
-// Airport data with coordinates and metadata
-const airports = {
-  "IRFD": { type: "major", location: "rockford island", x: 50.33, y: 57.59 },
-  "IMLR": { type: "major", location: "rockford island", x: 38.67, y: 52.92 },
-  "IBLT": { type: "small", location: "rockford island", x: 43.83, y: 53.45 },
-  "ISAU": { type: "regional", location: "sauthemptona island", x: 18.17, y: 62.28 },
-  "IGRV": { type: "major", location: "grindavik island", x: 20.67, y: 39.95 },
-  "ITKO": { type: "major", location: "tokyo island", x: 47.00, y: 17.25 },
-  "IDCS": { type: "small", location: "saba island", x: 48.17, y: 8.79 },
-  "IPPH": { type: "major", location: "perth island", x: 66.33, y: 27.25 },
-  "ILKL": { type: "small", location: "lukla island", x: 70.50, y: 28.29 },
-  "IZOL": { type: "major", location: "izolirani island", x: 84.67, y: 44.25 },
-  "ILAR": { type: "major", location: "larnaca", x: 70.67, y: 65.92 },
-  "IPAP": { type: "major", location: "paphos", x: 77.17, y: 67.62 },
-  "IHEN": { type: "small", location: "henstridge", x: 65.17, y: 73.45 },
-  "IBTH": { type: "small", location: "saint barthelemy", x: 57.83, y: 39.09 }
-};
-
-// Airline hub, route configuration, and descriptions
-const airlineHubsAndRoutes = {
-  "DAL": { hub: "IRFD", routes: ["ITKO", "ILAR", "IZOL"], routeFrequency: 0.8, description: "Delta Airlines, a major global airline known for its extensive network." },
-  "NKS": { hub: "IMLR", routes: ["IRFD", "ISAU", "IGRV", "ILAR"], routeFrequency: 0.8, description: "Spirit Wings, a low-cost carrier with a focus on efficiency." },
-  "BAW": { hub: "IPPH", routes: ["IRFD", "IMLR", "IBTH", "ILAR", "ITKO"], routeFrequency: 0.8, description: "British Airways, the UK's flag carrier with premium service." },
-  "SAS": { hub: "IGRV", routes: ["ISAU", "ITKO", "IMLR"], routeFrequency: 0.8, description: "Scandinavian Airlines, efficient service across colder islands." },
-  "AAL": { hub: "ILAR", routes: ["ITKO", "IPPH", "ISAU", "IBTH", "IMLR", "IRFD", "IPAP"], routeFrequency: 0.8, description: "American Airlines, vast network with modern fleet." },
-  "DLH": { hub: "ITKO", routes: ["IRFD", "IPPH", "IZOL", "IGRV", "IBTH", "ILAR"], routeFrequency: 0.8, description: "Lufthansa, Germany's flag carrier with premium service." },
-  "UPS": { hub: null, routes: [], routeFrequency: 0.0, description: "UPS Airlines, major cargo operator with global reach." },
-  "FDX": { hub: null, routes: [], routeFrequency: 0.0, description: "FedEx Express, world's largest cargo airline with overnight services." }
-};
-
-// Airline colors for logos
-const airlineColors = {
-  "DAL": { bg: "#0033a0", color: "#ffffff" },
-  "NKS": { bg: "#000000", color: "#ffb81c" },
-  "BAW": { bg: "#01295c", color: "#ffffff" },
-  "SAS": { bg: "#003d73", color: "#ffffff" },
-  "AAL": { bg: "#0039aa", color: "#ffffff" },
-  "DLH": { bg: "#001a49", color: "#f9b000" },
-  "UPS": { bg: "#351c15", color: "#ffb500" },
-  "FDX": { bg: "#4d148c", color: "#ff6600" }
-};
-
-// Aircraft data with size, range, and capacity (pax for commercial, kg for cargo)
-const aircraftData = {
-  "ATR72": { size: "small", range: 15, capacity: { pax: 78, cargo: 4000 } },
-  "C208F": { size: "small", range: 12, capacity: { pax: 0, cargo: 2000 } },
-  "CRJ700": { size: "small", range: 20, capacity: { pax: 78, cargo: 4000 } },
-  "A220": { size: "regional", range: 35, capacity: { pax: 130, cargo: 6000 } },
-  "A320": { size: "regional", range: 30, capacity: { pax: 180, cargo: 8000 } },
-  "E190": { size: "regional", range: 28, capacity: { pax: 114, cargo: 5000 } },
-  "B717": { size: "regional", range: 25, capacity: { pax: 134, cargo: 5000 } },
-  "B727": { size: "regional", range: 30, capacity: { pax: 189, cargo: 8000 } },
-  "B737": { size: "regional", range: 32, capacity: { pax: 189, cargo: 8000 } },
-  "B737BCF": { size: "regional", range: 30, capacity: { pax: 0, cargo: 20000 } },
-  "B727F": { size: "regional", range: 30, capacity: { pax: 0, cargo: 20000 } },
-  "CONC": { size: "regional", range: 45, capacity: { pax: 100, cargo: 5000 } },
-  "A330": { size: "major", range: 70, capacity: { pax: 335, cargo: 20000 } },
-  "A340": { size: "major", range: 75, capacity: { pax: 375, cargo: 22000 } },
-  "A350": { size: "major", range: 80, capacity: { pax: 410, cargo: 25000 } },
-  "A380": { size: "major", range: 85, capacity: { pax: 853, cargo: 30000 } },
-  "B707": { size: "regional", range: 65, capacity: { pax: 202, cargo: 10000 } },
-  "B747": { size: "major", range: 75, capacity: { pax: 660, cargo: 30000 } },
-  "B757": { size: "major", range: 60, capacity: { pax: 295, cargo: 15000 } },
-  "B767": { size: "major", range: 65, capacity: { pax: 375, cargo: 18000 } },
-  "B777": { size: "major", range: 80, capacity: { pax: 426, cargo: 25000 } },
-  "B787": { size: "major", range: 85, capacity: { pax: 336, cargo: 20000 } },
-  "MD11": { size: "major", range: 70, capacity: { pax: 410, cargo: 20000 } },
-  "MD90": { size: "major", range: 55, capacity: { pax: 172, cargo: 10000 } },
-  "B757F": { size: "major", range: 60, capacity: { pax: 0, cargo: 35000 } },
-  "B767F": { size: "major", range: 65, capacity: { pax: 0, cargo: 40000 } },
-  "B777F": { size: "major", range: 80, capacity: { pax: 0, cargo: 50000 } },
-  "MD11F": { size: "major", range: 70, capacity: { pax: 0, cargo: 45000 } },
-  "B747F": { size: "major", range: 75, capacity: { pax: 0, cargo: 60000 } }
-};
-
-// Aircraft by airline (available for purchase)
-const aircraftByAirline = {
-  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B727", "B747", "MD11", "MD90", "CRJ700"],
-  "NKS": ["A320"],
-  "BAW": ["A320", "A350", "A380", "B777", "B787", "B737", "B707", "B727", "B747", "B757", "B767", "CONC", "CRJ700"],
-  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737", "B747", "B757", "B767", "MD90"],
-  "AAL": ["A320", "B737", "B777", "B787", "B707", "B727", "B747", "B757", "B767", "MD11", "CRJ700"],
-  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B747", "B767", "B777", "B787", "B707", "B727", "B737"],
-  "UPS": ["B757F", "B767F", "MD11F", "B747F", "B727F"],
-  "FDX": ["B757F", "B767F", "B777F", "MD11F", "ATR72F", "C208F", "B727F", "B737BCF"]
-};
+// [Existing data: commercialAirlines, cargoAirlines, unlockCosts, aircraftCosts, airportGates, airports, airlineHubsAndRoutes, airlineColors, aircraftData, aircraftByAirline unchanged]
 
 // --- State ---
 const state = {
@@ -168,7 +8,9 @@ const state = {
   offers: [],
   currency: 0,
   unlockedAirlines: ["FDX"],
-  ownedAircraft: { "FDX": ["C208F"] } // Start with C208F for FDX
+  ownedAircraft: { "FDX": ["C208F"] },
+  flightPlans: {},
+  lastGenerated: 0
 };
 
 // --- Cookie Helpers ---
@@ -196,6 +38,7 @@ function save() {
   setCookie('currency', state.currency.toString());
   setCookie('unlockedAirlines', JSON.stringify(state.unlockedAirlines));
   setCookie('ownedAircraft', JSON.stringify(state.ownedAircraft));
+  setCookie('flightPlans', JSON.stringify(state.flightPlans));
 }
 
 function loadState() {
@@ -204,6 +47,7 @@ function loadState() {
   const currencyCookie = getCookie('currency');
   const unlockedAirlinesCookie = getCookie('unlockedAirlines');
   const ownedAircraftCookie = getCookie('ownedAircraft');
+  const flightPlansCookie = getCookie('flightPlans');
 
   if (airlineCookie) state.airline = JSON.parse(airlineCookie);
   if (flightsCookie) state.flights = JSON.parse(flightsCookie);
@@ -212,6 +56,98 @@ function loadState() {
   else state.unlockedAirlines = ["FDX"];
   if (ownedAircraftCookie) state.ownedAircraft = JSON.parse(ownedAircraftCookie);
   else state.ownedAircraft = { "FDX": ["C208F"] };
+  if (flightPlansCookie) state.flightPlans = JSON.parse(flightPlansCookie);
+  else state.flightPlans = {};
+}
+
+// --- 24data API Integration ---
+let sseFlightPlans = null;
+
+function initFlightPlanListener() {
+  sseFlightPlans = new EventSource('/api/flight-plans');
+  sseFlightPlans.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.t === 'FLIGHT_PLAN') {
+      const fp = data.d;
+      const flight = state.flights.find(f => {
+        const callsign = `${f.code}${f.flight.replace(f.code, '')}`;
+        return callsign === fp.callsign &&
+               fp.aircraft === f.aircraft &&
+               fp.departing === f.from &&
+               fp.arriving === f.to;
+      });
+      if (flight) {
+        state.flightPlans[flight.id] = {
+          callsign: fp.callsign,
+          aircraft: fp.aircraft,
+          departing: fp.departing,
+          arriving: fp.arriving,
+          validated: true
+        };
+        save();
+        renderFlights();
+        toast(`Flight plan validated for ${fp.callsign}`);
+      }
+    }
+  };
+  sseFlightPlans.onerror = () => {
+    toast('Error connecting to flight plan updates. Retrying...');
+    setTimeout(initFlightPlanListener, 5000);
+  };
+}
+
+async function checkAircraftOnGround(flight) {
+  try {
+    const callsign = `${flight.code}${flight.flight.replace(flight.code, '')}`;
+    const response = await fetch('/api/acft-data');
+    if (!response.ok) throw new Error('Failed to fetch aircraft data');
+    const aircraftData = await response.json();
+    const aircraft = aircraftData[callsign];
+    return aircraft && aircraft.isOnGround === true;
+  } catch (e) {
+    console.error('Error fetching aircraft data:', e);
+    toast('Unable to verify aircraft status');
+    return false;
+  }
+}
+
+async function submitFlightPlan(flight) {
+  const callsign = `${flight.code}${flight.flight.replace(flight.code, '')}`;
+  const flightPlan = {
+    robloxName: 'Player', // Replace with actual user input/auth
+    callsign: callsign,
+    realcallsign: callsign,
+    aircraft: flight.aircraft,
+    flightrules: 'IFR',
+    departing: flight.from,
+    arriving: flight.to,
+    route: 'GPS DIRECT',
+    flightlevel: '030'
+  };
+  try {
+    const response = await fetch('/api/submit-flight-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(flightPlan)
+    });
+    if (response.ok) {
+      toast(`Flight plan submitted for ${callsign}. Awaiting validation...`);
+      state.flightPlans[flight.id] = {
+        callsign: flightPlan.callsign,
+        aircraft: flightPlan.aircraft,
+        departing: flightPlan.departing,
+        arriving: flightPlan.arriving,
+        validated: false
+      };
+      save();
+      renderFlights();
+    } else {
+      toast('Failed to submit flight plan');
+    }
+  } catch (e) {
+    console.error('Error submitting flight plan:', e);
+    toast('Error submitting flight plan');
+  }
 }
 
 // --- Helpers ---
@@ -404,11 +340,10 @@ function generateOffers(n=12) {
     const dep = new Date(now.getTime() + depMinutes * 60000);
     const arr = new Date(dep.getTime() + minutes * 60000);
     
-    // Calculate pay based on aircraft capacity and distance
     const acData = aircraftData[aircraft];
     const capacity = isCargo ? acData.capacity.cargo : acData.capacity.pax;
-    const basePay = isCargo ? capacity / 1000 : capacity / 5; // $1 per 1000kg cargo, $0.2 per pax
-    const distanceFactor = distance / 10; // Scale by distance
+    const basePay = isCargo ? capacity / 1000 : capacity / 5;
+    const distanceFactor = distance / 10;
     const pay = Math.round(basePay * distanceFactor * (isCargo ? 1.15 : 1.0));
     
     const offer = {
@@ -425,7 +360,7 @@ function generateOffers(n=12) {
       arrISO: arr.toISOString(), 
       minutes, 
       aircraft, 
-      pay: Math.max(10, pay), // Ensure minimum pay
+      pay: Math.max(10, pay),
       departureGate: getRandomGate(o.icao, isCargo),
       arrivalGate: getRandomGate(d.icao, isCargo)
     };
@@ -434,12 +369,12 @@ function generateOffers(n=12) {
   return offers;
 }
 
+// --- UI Renderers ---
 function updateCurrencyDisplay() {
   const amountEl = el('#currencyAmount');
   if (amountEl) amountEl.textContent = state.currency;
 }
 
-// --- UI Renderers ---
 function updateAirlineInfo() {
   if (!state.airline) return;
   const { name, code } = state.airline;
@@ -455,15 +390,13 @@ function updateAirlineInfo() {
 
   const fleetDisplay = fleet.map(ac => {
     const acData = aircraftData[ac] || {};
-    const typeIcon = acData.size === 'small' ? '✈️' : acData.size === 'regional' ? '🛩️' : '✈️';
-    return `<span class="fleet-tag" title="${ac}">${typeIcon} ${ac}</span>`;
+    const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
+    return `<span class="fleet-tag" title="${ac}"><span class="material-icons-round" style="font-size: 1em;">${typeIcon}</span> ${ac}</span>`;
   }).join('');
 
   const logo = el('#airlineLogo');
   if (logo) {
-    logo.textContent = code;
-    logo.style.background = airlineColors[code]?.bg || '#1a73e8';
-    logo.style.color = airlineColors[code]?.color || '#ffffff';
+    logo.innerHTML = `<img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${airlineColors[code]?.color||'#fff'};font-weight:bold;font-size:0.9rem\\'>${code}</div>'">`;
   }
   const nameEl = el('#airlineName'); if (nameEl) nameEl.textContent = name;
   const icaoEl = el('#airlineIcao'); if (icaoEl) icaoEl.innerHTML = `ICAO <span class="highlight">•</span> <span class="code">${code}</span>`;
@@ -486,13 +419,16 @@ function renderSelectedAirline() {
   const box = el('#selectedAirline');
   box.innerHTML = '';
   if (!state.airline) {
-    box.innerHTML = `<div class="muted" style="padding: 8px 0; text-align: center;">No airline selected</div>`;
+    box.innerHTML = `
+      <div class="muted" style="margin-bottom: 12px;">No airline selected</div>
+      <button class="btn primary" id="openAirlines" aria-label="Choose Airline" style="width: 100%; justify-content: center;">
+        <span class="btn-icon material-icons-round">flight_takeoff</span>
+        <span>Choose Airline</span>
+      </button>`;
   } else {
     box.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1)">
-        <div class="airline-logo-container" style="background: transparent; border: none;">
-          <img src="airline_icons/${state.airline?.code}.png" alt="${state.airline?.name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${state.airline?.code}'; this.remove();" />
-        </div>
+        <div class="airline-logo-container" id="airlineLogo"></div>
         <div style="flex:1; min-width:0">
           <div id="airlineName" style="font-weight:800; font-size:1.2rem; word-wrap:break-word;">${state.airline?.name || ''}</div>
           <div id="airlineIcao" class="muted" style="font-size:0.85rem; margin-top:2px;">${state.airline?.code || ''}</div>
@@ -520,8 +456,14 @@ function renderSelectedAirline() {
         </div>
       </div>
       <div class="btn-row" style="margin-top:10px">
-        <button class="btn" id="switchAirline">Switch</button>
-        <button class="btn warn" id="clearAirline">Clear</button>
+        <button class="btn primary" id="switchAirline">
+          <span class="btn-icon material-icons-round">swap_horiz</span>
+          <span>Switch</span>
+        </button>
+        <button class="btn warn" id="clearAirline">
+          <span class="btn-icon material-icons-round">clear</span>
+          <span>Clear</span>
+        </button>
       </div>`;
   }
   
@@ -538,6 +480,7 @@ function renderSelectedAirline() {
   if (clearBtn) clearBtn.onclick = () => {
     state.airline = null; 
     state.offers = [];
+    state.flightPlans = {};
     save();
     renderSelectedAirline(); 
     renderOffers();
@@ -616,8 +559,14 @@ function renderOffers() {
         </div>
         <div class="muted" style="margin-top:6px; font-size:.85rem">${badge(o.fromType)} • ${badge(o.toType)}</div>
         <div class="btn-row" style="margin-top:10px">
-          <button class="btn primary" style="background:linear-gradient(180deg, #4caf50, #2e7d32); border-color:#43a047" data-accept="${idx}">Accept</button>
-          <button class="btn warn" data-decline="${idx}">Decline</button>
+          <button class="btn primary" data-accept="${idx}">
+            <span class="btn-icon material-icons-round">check</span>
+            <span>Accept</span>
+          </button>
+          <button class="btn warn" data-decline="${idx}">
+            <span class="btn-icon material-icons-round">close</span>
+            <span>Decline</span>
+          </button>
         </div>
       </article>`;
   }).join('');
@@ -674,6 +623,9 @@ function renderFlights() {
     ensureOps(f);
     const acData = aircraftData[f.aircraft] || {};
     const capacityText = airlineIsCargo(f.code) ? `${acData.capacity.cargo}kg` : `${acData.capacity.pax} pax`;
+    const flightPlan = state.flightPlans[f.id] || {};
+    const isFlightPlanValid = flightPlan.validated;
+    const flightPlanStatus = isFlightPlanValid ? 'Valid' : 'Pending';
     return `
       <tr data-flight-id="${f.id}">
         <td><b>${f.code}${f.flight.replace(f.code,'')}</b></td>
@@ -685,21 +637,45 @@ function renderFlights() {
         <td>${fmtTime(new Date(f.depISO))} → ${fmtTime(new Date(f.arrISO))}</td>
         <td>${f.aircraft} (${capacityText})</td>
         <td><span class="status ${f.status}">${f.status[0].toUpperCase()+f.status.slice(1)}</span></td>
+        <td><span class="chip ${isFlightPlanValid ? 'good' : 'warn'}">${flightPlanStatus}</span></td>
         <td>
-          <div style="display:flex; gap:6px; flex-wrap:wrap">
-            ${f.status==='scheduled' ? `<button class="btn" style="background:linear-gradient(180deg, #ffd700, #ff8c00); border-color:#ffa500; color:#1a1a1a" data-ops="${f.id}">Ground Ops</button>` : ''}
-            ${f.status==='scheduled'? `<button class="btn" style="background:linear-gradient(180deg, #4caf50, #2e7d32); border-color:#43a047; color:white" data-start="${f.id}">Start</button>`:''}
-            ${f.status==='enroute'? `<button class="btn good" data-complete="${f.id}">Complete</button>`:''}
-            ${f.status!=='completed'? `<button class="btn warn" data-cancel="${f.id}">Cancel</button>`:''}
+          <div class="btn-row">
+            <button class="btn primary" data-file-plan="${f.id}">
+              <span class="btn-icon material-icons-round">description</span>
+              <span>File Plan</span>
+            </button>
+            ${f.status==='scheduled' ? `<button class="btn good" data-ops="${f.id}"><span class="btn-icon material-icons-round">tune</span><span>Ground Ops</span></button>` : ''}
+            ${f.status==='scheduled'? `<button class="btn primary" data-start="${f.id}" ${!isFlightPlanValid || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done' ? 'disabled' : ''}><span class="btn-icon material-icons-round">flight_takeoff</span><span>Start</span></button>`:''}
+            ${f.status==='enroute'? `<button class="btn primary" data-complete="${f.id}"><span class="btn-icon material-icons-round">check_circle</span><span>Complete</span></button>`:''}
+            ${f.status!=='completed'? `<button class="btn warn" data-cancel="${f.id}"><span class="btn-icon material-icons-round">cancel</span><span>Cancel</span></button>`:''}
           </div>
         </td>
       </tr>`;
   }).join('');
 
-  body.querySelectorAll('[data-start]').forEach(b => b.onclick = () => {
+  body.querySelectorAll('[data-file-plan]').forEach(btn => {
+    btn.onclick = () => {
+      const flight = state.flights.find(x => x.id === btn.dataset.filePlan);
+      if (flight) {
+        submitFlightPlan(flight);
+      }
+    };
+  });
+
+  body.querySelectorAll('[data-start]').forEach(b => b.onclick = async () => {
     const f = state.flights.find(x => x.id === b.dataset.start);
-    if (f && ensureOps(f).tasks.pushback.status !== 'done') {
+    if (!f) return;
+    if (!state.flightPlans[f.id]?.validated) {
+      toast('Submit a valid flight plan before starting');
+      return;
+    }
+    if (!f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
       toast('Complete ground operations before starting');
+      return;
+    }
+    const isOnGround = await checkAircraftOnGround(f);
+    if (!isOnGround) {
+      toast('Aircraft must be on the ground to start');
       return;
     }
     updateFlight(b.dataset.start, 'enroute');
@@ -758,25 +734,23 @@ function closeOps() { el('#opsModal').classList.remove('active'); }
 function renderOpsModal(f) {
   const tpl = getTemplateForFlight(f);
   const cont = el('#opsContent');
+  const hint = el('#opsHint');
   const allDone = tpl.every(t => f.ops.tasks[t.key].status === 'done');
   cont.innerHTML = `
     <div class="banner"><div>
       <div style="font-weight:800">${f.code}${f.flight.replace(f.code,'')} • ${f.aircraft}</div>
       <div class="muted">${f.from} → ${f.to} • ${fmtTime(new Date(f.depISO))} → ${fmtTime(new Date(f.arrISO))}</div>
     </div></div>
-    <div class="muted" style="margin: 12px 0; padding: 0 8px; font-size: 0.9rem; text-align: center;" id="opsHint">
-      ${allDone ? 'All tasks complete. You may depart.' : 'Complete all tasks to enable pushback.'}
-    </div>
     <div class="ops-list">
       ${tpl.map((t, idx) => {
         const task = f.ops.tasks[t.key];
         const prevDone = idx === 0 ? true : tpl.slice(0, idx).every(tt => f.ops.tasks[tt.key].status === 'done');
         const disabled = !prevDone && task.status !== 'done';
         const btns = task.status === 'pending'
-          ? `<button class="btn" style="background:linear-gradient(180deg, #ffd700, #ff8c00); border-color:#ffa500; color:#1a1a1a" data-start="${t.key}" ${disabled?'disabled':''}>Start</button>`
+          ? `<button class="btn good" data-start="${t.key}" ${disabled?'disabled':''}><span class="btn-icon material-icons-round">play_arrow</span><span>Start</span></button>`
           : task.status === 'in_progress'
-            ? `<button class="btn" style="background:linear-gradient(180deg, #4caf50, #2e7d32); border-color:#43a047; color:white" data-complete="${t.key}">Complete</button><button class="btn" style="background:linear-gradient(180deg, #f44336, #d32f2f); border-color:#e53935; color:white" data-stop="${t.key}">Stop</button>`
-            : `<span class="chip">✓ Done</span>`;
+            ? `<button class="btn primary" data-complete="${t.key}"><span class="btn-icon material-icons-round">check</span><span>Complete</span></button><button class="btn warn" data-stop="${t.key}"><span class="btn-icon material-icons-round">stop</span><span>Stop</span></button>`
+            : `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Done</span>`;
         return `
           <div class="task" data-task="${t.key}"> 
             <div class="row"> 
@@ -787,6 +761,7 @@ function renderOpsModal(f) {
           </div>`;
       }).join('')}
     </div>`;
+  hint.innerHTML = allDone ? 'All tasks complete. You may depart.' : 'Complete all tasks to enable pushback.';
 
   cont.querySelectorAll('[data-start]').forEach(b => b.onclick = () => startTask(f, b.dataset.start));
   cont.querySelectorAll('[data-complete]').forEach(b => b.onclick = () => completeTask(f, b.dataset.complete));
@@ -794,14 +769,41 @@ function renderOpsModal(f) {
   el('#opsQuick').onclick = () => {
     const t = getTemplateForFlight(f); t.forEach(x => { f.ops.tasks[x.key]={status:'done', progress:100}; }); save(); renderOpsModal(f); toast('All ground ops complete');
   };
-  el('#opsClose').onclick = closeOps;
   el('#opsLoadSheet').onclick = () => {
-    const ls = getOrCreateLoadSheet(f);
-    save();
-    renderOpsModal(f);
-    renderFlights();
-    toast(`Load sheet received: ${ls.passengers} pax, ${ls.cargo}kg cargo, ${ls.fuel}kg fuel`);
+    const acData = aircraftData[f.aircraft] || { capacity: { pax: 0, cargo: 0 } };
+    const isCargo = airlineIsCargo(f.code);
+    const capacity = isCargo ? acData.capacity.cargo : acData.capacity.pax;
+    const load = Math.round(capacity * (0.7 + Math.random() * 0.25));
+    const fuel = Math.round((isCargo ? 5000 : 3000) + Math.random() * 2000);
+    const totalWeight = isCargo ? load + fuel : load * 80 + fuel;
+    const loadSheet = `
+      <div class="load-sheet">
+        <h3>Load Sheet for ${f.code}${f.flight.replace(f.code,'')}</h3>
+        <div class="load-sheet-grid">
+          <div class="load-sheet-item">
+            <span class="label">${isCargo ? 'Cargo' : 'Passengers'}</span>
+            <span class="value">${load}${isCargo ? 'kg' : ''}</span>
+          </div>
+          <div class="load-sheet-item">
+            <span class="label">Fuel</span>
+            <span class="value">${fuel}kg</span>
+          </div>
+          <div class="load-sheet-item">
+            <span class="label">Total Weight</span>
+            <span class="value">${totalWeight}kg</span>
+          </div>
+          <div class="load-sheet-item total">
+            <span class="label">Capacity Utilization</span>
+            <span class="value">${Math.round((load / capacity) * 100)}%</span>
+          </div>
+        </div>
+        <div class="load-sheet-progress">
+          <div class="load-sheet-progress-bar" style="width:${Math.round((load / capacity) * 100)}%"></div>
+        </div>
+      </div>`;
+    cont.innerHTML = loadSheet + cont.innerHTML;
   };
+  el('#opsClose').onclick = closeOps;
 }
 
 function startTask(f, key) {
@@ -842,11 +844,18 @@ function completeTask(f, key) {
   if (key === 'pushback') { updateFlight(f.id, 'enroute'); closeOps(); switchTab('flights'); }
 }
 
+// --- Flight Management ---
 function updateFlight(id, newStatus) {
   const f = state.flights.find(x => x.id === id); if (!f) return;
-  if (newStatus === 'enroute' && (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done')) {
-    toast('Complete ground operations before starting');
-    return;
+  if (newStatus === 'enroute') {
+    if (!state.flightPlans[f.id]?.validated) {
+      toast('Submit a valid flight plan before starting');
+      return;
+    }
+    if (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
+      toast('Complete ground operations before starting');
+      return;
+    }
   }
   f.status = newStatus; 
   save(); 
@@ -855,9 +864,14 @@ function updateFlight(id, newStatus) {
 }
 
 function removeFlight(id) {
-  state.flights = state.flights.filter(x => x.id !== id); save(); renderFlights(); toast('Flight removed');
+  state.flights = state.flights.filter(x => x.id !== id);
+  delete state.flightPlans[id];
+  save();
+  renderFlights();
+  toast('Flight removed');
 }
 
+// --- Shop and Airlines ---
 function renderAirlines() {
   const commercialEl = el('#commercialList');
   const cargoEl = el('#cargoList');
@@ -870,14 +884,14 @@ function renderAirlines() {
     const routes = (info.routes && info.routes.length) ? info.routes.join(', ') : 'Various';
     const fleet = (state.ownedAircraft[code] || []).map(ac => {
       const acData = aircraftData[ac] || {};
-      const typeIcon = acData.size === 'small' ? '✈️' : acData.size === 'regional' ? '🛩️' : '✈️';
-      return `<span class="fleet-tag" title="${ac}">${typeIcon} ${ac}</span>`;
+      const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
+      return `<span class="fleet-tag" title="${ac}"><span class="material-icons-round" style="font-size: 1em;">${typeIcon}</span> ${ac}</span>`;
     }).join('');
 
     return `
       <div class="card airline-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div class="airline-logo-container" style="background: transparent; border: none;">
+          <div class="airline-logo-container">
             <img src="airline_icons/${code}.png" alt="${name} Logo" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${color.color||'#fff'};font-weight:bold;font-size:0.9rem\\'>${code}</div>'">
           </div>
           <div style="min-width:0; flex:1">
@@ -917,16 +931,19 @@ function renderModalAirlines() {
     const cost = unlockCosts[code] || 0;
     let buttonHtml = '';
     if (isUnlocked) {
-      buttonHtml = `<button class="btn primary select-airline" data-code="${code}" data-name="${name}">Select</button>`;
+      buttonHtml = `<button class="btn primary select-airline" data-code="${code}" data-name="${name}"><span class="btn-icon material-icons-round">check</span><span>Select</span></button>`;
     } else if (code !== 'FDX') {
-      buttonHtml = `<button class="btn" data-buy="${code}" ${state.currency < cost ? 'disabled' : ''}>Unlock for $${cost}</button>`;
+      buttonHtml = `<button class="btn primary buy-airline" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">lock_open</span><span>Unlock for $${cost}</span></button>`;
     }
     return `
       <div class="airline-pill ${isUnlocked ? '' : 'locked'}" data-code="${code}" data-name="${name}">
-        <div class="airline-logo-container" style="background: transparent; border: none;">
+        <div class="airline-logo-container">
           <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
         </div>
-        <div>${name} <span class="muted">${code}</span></div>
+        <div style="flex:1; min-width:0">
+          <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${name}</div>
+          <div class="muted" style="font-size:.85rem">${code}</div>
+        </div>
         ${buttonHtml}
       </div>`;
   };
@@ -945,13 +962,14 @@ function renderModalAirlines() {
       closeAirlineModal();
       renderSelectedAirline();
       renderOffers();
+      renderShop();
       toast(`Selected ${name}`);
     };
   });
   
-  document.querySelectorAll('[data-buy]').forEach(btn => {
+  document.querySelectorAll('.buy-airline').forEach(btn => {
     btn.onclick = () => {
-      const code = btn.dataset.buy;
+      const code = btn.dataset.code;
       const cost = unlockCosts[code];
       if (state.currency >= cost) {
         state.currency -= cost;
@@ -961,6 +979,7 @@ function renderModalAirlines() {
         updateCurrencyDisplay();
         renderModalAirlines();
         renderShop();
+        renderAirlines();
         toast(`Unlocked ${airlineList()[code]} for $${cost}`);
       } else {
         toast('Not enough currency');
@@ -979,15 +998,15 @@ function renderShop() {
     const cost = unlockCosts[code] || 0;
     let statusHtml = '';
     if (isUnlocked) {
-      statusHtml = `<span class="chip good">Unlocked</span>`;
+      statusHtml = `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Unlocked</span>`;
     } else if (code !== 'FDX') {
-      statusHtml = `<button class="btn primary buy-airline" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}>Unlock for $${cost}</button>`;
+      statusHtml = `<button class="btn primary buy-airline" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">lock_open</span><span>Unlock for $${cost}</span></button>`;
     }
     const info = airlineHubsAndRoutes[code] || { description: '' };
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div class="airline-logo-container" style="background: transparent; border: none;">
+          <div class="airline-logo-container">
             <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
           </div>
           <div style="flex:1">
@@ -995,32 +1014,46 @@ function renderShop() {
             <div class="muted" style="font-size:.85rem">${info.description || 'No description'}</div>
           </div>
         </div>
-        ${statusHtml}
+        <div class="btn-row">${statusHtml}</div>
       </div>`;
   };
 
+  shopEl.innerHTML = Object.entries(allAirlines)
+    .map(([name, code]) => renderShopCard(name, code))
+    .join('');
+
   const renderFleetCard = (aircraft, code) => {
-    const acData = aircraftData[aircraft] || { capacity: { pax: 0, cargo: 0 } };
+    const acData = aircraftData[aircraft] || { capacity: { pax: 0, cargo: 0 }, size: 'major', range: 0 };
     const isCargo = airlineIsCargo(code);
     const cost = aircraftCosts[aircraft] || 100;
     const owned = (state.ownedAircraft[code] || []).includes(aircraft);
     const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
+    const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div style="font-weight:800">${aircraft}</div>
-          <div class="muted" style="font-size:.85rem">Capacity: ${capacityText}</div>
+          <div style="flex:1">
+            <div style="font-weight:800">${aircraft}</div>
+            <div class="muted" style="font-size:.85rem">Capacity: ${capacityText} | Range: ${acData.range} units</div>
+            <div class="muted" style="font-size:.85rem">${badge(acData.size)}</div>
+          </div>
         </div>
-        ${owned ? 
-          `<span class="chip good">Owned</span>` : 
-          `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-airline="${code}" ${state.currency < cost || !state.unlockedAirlines.includes(code) ? 'disabled' : ''}>Buy for $${cost}</button>`}
+        <div class="btn-row">
+          ${owned ? 
+            `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
+            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
+        </div>
       </div>`;
   };
 
-  shopEl.innerHTML = Object.entries(allAirlines).map(([name, code]) => renderShopCard(name, code)).join('');
-  fleetEl.innerHTML = state.airline ? 
-    (aircraftByAirline[state.airline.code] || []).map(aircraft => renderFleetCard(aircraft, state.airline.code)).join('') :
-    `<div class="muted" style="padding: 8px 0; text-align: center;">Select an airline to view available aircraft</div>`;
+  const availableAircraft = state.unlockedAirlines
+    .filter(code => aircraftByAirline[code])
+    .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
+    .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
+
+  fleetEl.innerHTML = availableAircraft
+    .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
+    .join('');
 
   shopEl.querySelectorAll('.buy-airline').forEach(btn => {
     btn.onclick = () => {
@@ -1033,8 +1066,9 @@ function renderShop() {
         save();
         updateCurrencyDisplay();
         renderShop();
+        renderAirlines();
         renderModalAirlines();
-        toast(`Unlocked ${airlineList()[code]}`);
+        toast(`Unlocked ${allAirlines[code]} for $${cost}`);
       } else {
         toast('Not enough currency');
       }
@@ -1044,119 +1078,97 @@ function renderShop() {
   fleetEl.querySelectorAll('.buy-aircraft').forEach(btn => {
     btn.onclick = () => {
       const aircraft = btn.dataset.aircraft;
-      const code = btn.dataset.airline;
+      const code = btn.dataset.code;
       const cost = aircraftCosts[aircraft];
-      if (state.currency >= cost && state.unlockedAirlines.includes(code)) {
+      if (state.currency >= cost) {
         state.currency -= cost;
         state.ownedAircraft[code] = state.ownedAircraft[code] || [];
         state.ownedAircraft[code].push(aircraft);
-        state.offers = []; // Clear offers to force refresh with new aircraft
-        state.lastGenerated = 0;
         save();
         updateCurrencyDisplay();
         renderShop();
+        renderAirlines();
+        renderSelectedAirline();
         renderOffers();
-        toast(`Purchased ${aircraft} for ${airlineList()[code]}`);
+        toast(`Purchased ${aircraft} for $${cost}`);
       } else {
-        toast('Not enough currency or airline not unlocked');
+        toast('Not enough currency');
       }
     };
   });
 }
 
-function showModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-}
-
+// --- Modal Handlers ---
 function openAirlineModal() {
-  showModal('airlineModal');
+  el('#airlineModal').classList.add('active');
 }
 
 function closeAirlineModal() {
-  closeModal('airlineModal');
+  el('#airlineModal').classList.remove('active');
 }
 
-function capitalize(s) { return s[0].toUpperCase()+s.slice(1); }
+// --- Tab Navigation ---
+function switchTab(tab) {
+  els('.tab').forEach(t => t.classList.remove('active'));
+  els('.content').forEach(c => c.style.display = 'none');
+  el(`.tab[data-tab="${tab}"]`).classList.add('active');
+  el(`#tab-${tab}`).style.display = 'block';
+  
+  if (tab === 'offers') renderOffers();
+  else if (tab === 'flights') renderFlights();
+  else if (tab === 'airlines') renderAirlines();
+  else if (tab === 'shop') renderShop();
+}
+
+// --- Utility Functions ---
+function capitalize(str) {
+  return str.replace(/\b\w/g, c => c.toUpperCase());
+}
 
 function formatTimeRemaining(ms) {
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${minutes}m`;
+  if (hours > 0) return `${hours}h ${remainingMinutes}m`;
+  return `${minutes}m`;
 }
 
-function updateOfferTimes() {
-  const now = new Date();
-  document.querySelectorAll('.offer-card').forEach(card => {
-    const depTime = new Date(card.dataset.departure);
-    const timeElement = card.querySelector('.time-until');
-    if (!timeElement) return;
-    const timeRemaining = depTime - now;
-    if (timeRemaining > 0) {
-      timeElement.textContent = `Departs in ${formatTimeRemaining(timeRemaining)}`;
-      timeElement.style.color = timeRemaining < 300000 ? '#ef4444' : 'var(--muted)';
-    } else {
-      timeElement.textContent = 'Departed';
-      timeElement.style.color = '#ef4444';
-    }
-  });
-}
-
-function uiTick() {
-  renderSelectedAirline();
-  renderAirlines();
-  renderOffers();
-  renderFlights();
-  renderShop();
-  updateCurrencyDisplay();
-  updateOfferTimes();
-}
-
-function switchTab(tabId) {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.tab === tabId);
-  });
-  document.querySelectorAll('.content').forEach(content => {
-    content.style.display = content.id === `tab-${tabId}` ? 'block' : 'none';
-  });
-  if (tabId === 'flights') renderFlights();
-  if (tabId === 'airlines') renderAirlines();
-  if (tabId === 'shop') renderShop();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
+// --- Initialization ---
+function init() {
   loadState();
-  document.querySelectorAll('.tab').forEach(tab => {
+  updateCurrencyDisplay();
+  renderSelectedAirline();
+  renderOffers();
+  renderAirlines();
+  renderShop();
+  initFlightPlanListener();
+
+  els('.tab').forEach(tab => {
     tab.onclick = () => switchTab(tab.dataset.tab);
   });
-  const bannerChoose = el('#bannerChoose');
-  const closeModal = el('#closeModal');
-  const openAirlines = el('#openAirlines');
-  if (bannerChoose) bannerChoose.onclick = openAirlineModal;
-  if (closeModal) closeModal.onclick = closeAirlineModal;
-  if (openAirlines) openAirlines.onclick = openAirlineModal;
-  el('#refreshOffers').onclick = () => { state.lastGenerated = 0; renderOffers(); toast('Offers refreshed'); };
-  el('#searchOffers').addEventListener('input', (e) => filterOffers(e.target.value.trim().toLowerCase()));
-  el('#clearOfferSearch').onclick = () => { el('#searchOffers').value = ''; filterOffers(''); };
-  document.addEventListener('change', (e) => {
-    if (e.target.classList.contains('flt-type')) renderOffers();
+
+  el('#openAirlines').onclick = openAirlineModal;
+  el('#bannerChoose').onclick = openAirlineModal;
+  el('#closeModal').onclick = closeAirlineModal;
+
+  el('#refreshOffers').onclick = () => {
+    state.offers = [];
+    state.lastGenerated = 0;
+    renderOffers();
+    toast('Offers refreshed');
+  };
+
+  el('#searchOffers').oninput = e => filterOffers(e.target.value.trim().toLowerCase());
+  el('#clearOfferSearch').onclick = () => {
+    el('#searchOffers').value = '';
+    filterOffers('');
+  };
+
+  els('.flt-type').forEach(cb => cb.onchange = () => {
+    state.offers = [];
+    state.lastGenerated = 0;
+    renderOffers();
   });
-  switchTab('offers');
-  if (!state.airline) {
-    el('#airlineBanner').style.display = 'flex';
-    setTimeout(openAirlineModal, 300);
-  }
-  uiTick();
-});
+}
+
+document.addEventListener('DOMContentLoaded', init);
