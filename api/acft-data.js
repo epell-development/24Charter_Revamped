@@ -3,7 +3,6 @@ const fetch = require('node-fetch');
 let cache = {};
 let lastFetch = 0;
 const FETCH_INTERVAL = 3000; // 3 seconds
-const CACHE_DURATION = 60000; // 1 minute
 
 async function fetchAircraftData() {
   if (Date.now() - lastFetch < FETCH_INTERVAL) return cache;
