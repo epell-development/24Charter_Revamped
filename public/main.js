@@ -1,3 +1,54 @@
+// --- Initialization ---
+function init() {
+  loadState();
+  updateCurrencyDisplay();
+  renderSelectedAirline();
+  renderOffers();
+  renderAirlines();
+  renderShop();
+  initFlightPlanListener();
+
+  els('.tab').forEach(tab => {
+    tab.onclick = () => switchTab(tab.dataset.tab);
+  });
+
+  const openAirlinesBtn = el('#openAirlines');
+  if (openAirlinesBtn) openAirlinesBtn.onclick = openAirlineModal;
+
+  const bannerChooseBtn = el('#bannerChoose');
+  if (bannerChooseBtn) bannerChooseBtn.onclick = openAirlineModal;
+
+  const closeModalBtn = el('#closeModal');
+  if (closeModalBtn) closeModalBtn.onclick = closeAirlineModal;
+
+  const refreshOffersBtn = el('#refreshOffers');
+  if (refreshOffersBtn) {
+    refreshOffersBtn.onclick = () => {
+      state.offers = [];
+      state.lastGenerated = 0;
+      renderOffers();
+      toast('Offers refreshed');
+    };
+  }
+
+  const searchOffers = el('#searchOffers');
+  if (searchOffers) {
+    searchOffers.oninput = () => filterOffers(searchOffers.value.trim().toLowerCase());
+  }
+
+  const filterTypes = els('.flt-type');
+  filterTypes.forEach(ft => {
+    ft.onchange = () => {
+      state.offers = [];
+      state.lastGenerated = 0;
+      renderOffers();
+    };
+  });
+
+  const closeOpsBtn = el('#closeOps');
+  if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
+}
+
 // --- Data ---
 const commercialAirlines = {
   "Delta Airlines": "DAL",
@@ -21,7 +72,7 @@ const unlockCosts = {
   "AAL": 1000,
   "DLH": 1000,
   "UPS": 750,
-  "FDX": 0 // Free by default
+  "FDX": 0
 };
 
 const aircraftCosts = {
@@ -92,14 +143,14 @@ const airports = {
 };
 
 const airlineHubsAndRoutes = {
-  "DAL": { hub: "IRFD", routes: ["ITKO", "ILAR", "IZOL"], routeFrequency: 0.8, description: "Delta Airlines, a major global airline known for its extensive domestic and international network. Founded in 1924, it operates a large fleet of modern aircraft and is recognized for its operational reliability and customer service." },
-  "NKS": { hub: "IMLR", routes: ["IRFD", "ISAU", "IGRV", "ILAR"], routeFrequency: 0.8, description: "Spirit Wings, a rapidly growing low-cost carrier known for its ultra-low fares and no-frills approach. Despite its budget model, it maintains a strong focus on safety and operational efficiency." },
-  "BAW": { hub: "IPPH", routes: ["IRFD", "IMLR", "IBTH", "ILAR", "ITKO"], routeFrequency: 0.8, description: "British Airways, the flag carrier of the United Kingdom, with a rich history dating back to 1919. Known for its premium service and extensive long-haul network, connecting major cities worldwide." },
-  "SAS": { hub: "IGRV", routes: ["ISAU", "ITKO", "IMLR"], routeFrequency: 0.8, description: "Scandinavian Airlines, the flag carrier of Denmark, Norway, and Sweden. Founded in 1946, it's known for its efficient service and extensive network across Europe and the North Atlantic. In PTFS it is a more western airline focusing more on the colder islands in the game." },
-  "AAL": { hub: "ILAR", routes: ["ITKO", "IPPH", "ISAU", "IBTH", "IMLR", "IRFD", "IPAP"], routeFrequency: 0.8, description: "American Airlines, one of the world's largest airlines with a vast domestic and international network. Known for its modern fleet and comprehensive route map serving 9 different destinations in game." },
-  "DLH": { hub: "ITKO", routes: ["IRFD", "IPPH", "IZOL", "IGRV", "IBTH", "ILAR"], routeFrequency: 0.8, description: "Lufthansa, Germany's flag carrier and one of Europe's largest airlines. Renowned for its technical excellence, punctuality, and premium service across its global network in the game." },
-  "UPS": { hub: null, routes: [], routeFrequency: 0.0, description: "UPS Airlines, the cargo division of United Parcel Service. Operating one of the world's largest cargo fleets, it provides time-definite air freight services to over 15 destinations in the game." },
-  "FDX": { hub: null, routes: [], routeFrequency: 0.0, description: "FedEx Express, the world's largest cargo airline by fleet size. Known for its overnight shipping services and global logistics network, operating hundreds of flights daily in the game." }
+  "DAL": { hub: "IRFD", routes: ["ITKO", "ILAR", "IZOL"], routeFrequency: 0.8, description: "Delta Airlines, a major global airline known for its extensive domestic and international network." },
+  "NKS": { hub: "IMLR", routes: ["IRFD", "ISAU", "IGRV", "ILAR"], routeFrequency: 0.8, description: "Spirit Wings, a rapidly growing low-cost carrier known for its ultra-low fares." },
+  "BAW": { hub: "IPPH", routes: ["IRFD", "IMLR", "IBTH", "ILAR", "ITKO"], routeFrequency: 0.8, description: "British Airways, the flag carrier of the United Kingdom, known for its premium service." },
+  "SAS": { hub: "IGRV", routes: ["ISAU", "ITKO", "IMLR"], routeFrequency: 0.8, description: "Scandinavian Airlines, known for its efficient service and extensive network across Europe." },
+  "AAL": { hub: "ILAR", routes: ["ITKO", "IPPH", "ISAU", "IBTH", "IMLR", "IRFD", "IPAP"], routeFrequency: 0.8, description: "American Airlines, one of the world's largest airlines." },
+  "DLH": { hub: "ITKO", routes: ["IRFD", "IPPH", "IZOL", "IGRV", "IBTH", "ILAR"], routeFrequency: 0.8, description: "Lufthansa, Germany's flag carrier, renowned for its technical excellence." },
+  "UPS": { hub: null, routes: [], routeFrequency: 0.0, description: "UPS Airlines, providing time-definite air freight services." },
+  "FDX": { hub: null, routes: [], routeFrequency: 0.0, description: "FedEx Express, the world's largest cargo airline." }
 };
 
 const airlineColors = {
@@ -268,7 +319,7 @@ async function checkAircraftOnGround(flight) {
     return aircraft && aircraft.isOnGround === true;
   } catch (e) {
     console.error('Error fetching aircraft data:', e);
-    toast('Unable to verify aircraft status');
+    toast('Unable to verify aircraft status. Check server connectivity.');
     return false;
   }
 }
@@ -1305,53 +1356,5 @@ function formatTimeRemaining(ms) {
   return `${minutes}m`;
 }
 
-// --- Initialization ---
-function init() {
-  loadState();
-  updateCurrencyDisplay();
-  renderSelectedAirline();
-  renderOffers();
-  renderAirlines();
-  renderShop();
-  initFlightPlanListener();
-
-  els('.tab').forEach(tab => {
-    tab.onclick = () => switchTab(tab.dataset.tab);
-  });
-
-  const openAirlinesBtn = el('#openAirlines');
-  if (openAirlinesBtn) openAirlinesBtn.onclick = openAirlineModal;
-
-  const bannerChooseBtn = el('#bannerChoose');
-  if (bannerChooseBtn) bannerChooseBtn.onclick = openAirlineModal;
-
-  const closeModalBtn = el('#closeModal');
-  if (closeModalBtn) closeModalBtn.onclick = closeAirlineModal;
-
-  const refreshOffersBtn = el('#refreshOffers');
-  if (refreshOffersBtn) {
-    refreshOffersBtn.onclick = () => {
-      state.offers = [];
-      state.lastGenerated = 0;
-      renderOffers();
-      toast('Offers refreshed');
-    };
-  }
-
-  const searchOffers = el('#searchOffers');
-  if (searchOffers) {
-    searchOffers.oninput = () => filterOffers(searchOffers.value.trim().toLowerCase());
-  }
-
-  const filterTypes = els('.flt-type');
-  filterTypes.forEach(ft => {
-    ft.onchange = () => {
-      state.offers = [];
-      state.lastGenerated = 0;
-      renderOffers();
-    };
-  });
-
-  const closeOpsBtn = el('#closeOps');
-  if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
-}
+// --- Start Application ---
+init();
