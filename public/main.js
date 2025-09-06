@@ -76,7 +76,6 @@ const unlockCosts = {
 };
 
 const aircraftCosts = {
-  // PAX Aircraft
   "A220": 500,
   "A320": 600,
   "A330": 1000,
@@ -84,22 +83,29 @@ const aircraftCosts = {
   "A350": 1200,
   "A380": 1500,
   "B717": 550,
+  "B727": 600,
   "B737": 650,
   "B747": 1200,
   "B757": 800,
   "B767": 900,
   "B777": 1100,
   "B787": 1000,
+  "B707": 700,
+  "MD11": 900,
+  "MD90": 750,
+  "CRJ700": 400,
+  "CONC": 2000,
   "E190": 450,
   "ATR72": 300,
-  // Cargo Aircraft
-  "C208F": 200,
-  "ATR72F": 350,
-  "B737F": 650,
   "B757F": 800,
   "B767F": 900,
   "B777F": 1100,
-  "B747F": 1200
+  "MD11F": 900,
+  "B747F": 1200,
+  "B727F": 600,
+  "B737BCF": 650,
+  "C208F": 200,
+  "ATR72F": 350
 };
 
 const airportGates = {
@@ -159,41 +165,47 @@ const airlineColors = {
 };
 
 const aircraftData = {
-  // PAX Aircraft
-  "A220": { type: "pax", size: "regional", range: 35, capacity: { pax: 130, cargo: 1500 } },
-  "A320": { type: "pax", size: "regional", range: 30, capacity: { pax: 180, cargo: 1800 } },
-  "A330": { type: "pax", size: "major", range: 70, capacity: { pax: 300, cargo: 3500 } },
-  "A340": { type: "pax", size: "major", range: 75, capacity: { pax: 340, cargo: 3500 } },
-  "A350": { type: "pax", size: "major", range: 80, capacity: { pax: 350, cargo: 3500 } },
-  "A380": { type: "pax", size: "major", range: 85, capacity: { pax: 555, cargo: 3500 } },
-  "B717": { type: "pax", size: "regional", range: 25, capacity: { pax: 106, cargo: 1500 } },
-  "B737": { type: "pax", size: "regional", range: 32, capacity: { pax: 189, cargo: 1800 } },
-  "B747": { type: "pax", size: "major", range: 75, capacity: { pax: 416, cargo: 3500 } },
-  "B757": { type: "pax", size: "major", range: 60, capacity: { pax: 239, cargo: 3500 } },
-  "B767": { type: "pax", size: "major", range: 65, capacity: { pax: 290, cargo: 3500 } },
-  "B777": { type: "pax", size: "major", range: 80, capacity: { pax: 396, cargo: 3500 } },
-  "B787": { type: "pax", size: "major", range: 85, capacity: { pax: 336, cargo: 3500 } },
-  "E190": { type: "pax", size: "regional", range: 28, capacity: { pax: 114, cargo: 1500 } },
-  "ATR72": { type: "pax", size: "small", range: 15, capacity: { pax: 78, cargo: 800 } },
-  // Cargo Aircraft
-  "C208F": { type: "cargo", size: "small", range: 12, capacity: { pax: 0, cargo: 1000 } },
-  "ATR72F": { type: "cargo", size: "small", range: 15, capacity: { pax: 0, cargo: 7500 } },
-  "B737F": { type: "cargo", size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
-  "B757F": { type: "cargo", size: "major", range: 60, capacity: { pax: 0, cargo: 28000 } },
-  "B767F": { type: "cargo", size: "major", range: 65, capacity: { pax: 0, cargo: 32000 } },
-  "B777F": { type: "cargo", size: "major", range: 80, capacity: { pax: 0, cargo: 102000 } },
-  "B747F": { type: "cargo", size: "major", range: 75, capacity: { pax: 0, cargo: 113000 } }
+  "ATR72": { size: "small", range: 15, capacity: { pax: 78, cargo: 800 } },
+  "C208F": { size: "small", range: 12, capacity: { pax: 0, cargo: 1000 } },
+  "CRJ700": { size: "small", range: 20, capacity: { pax: 78, cargo: 800 } },
+  "A220": { size: "regional", range: 35, capacity: { pax: 130, cargo: 1500 } },
+  "A320": { size: "regional", range: 30, capacity: { pax: 180, cargo: 1800 } },
+  "E190": { size: "regional", range: 28, capacity: { pax: 114, cargo: 1500 } },
+  "B717": { size: "regional", range: 25, capacity: { pax: 106, cargo: 1500 } },
+  "B727": { size: "regional", range: 30, capacity: { pax: 189, cargo: 1800 } },
+  "B737": { size: "regional", range: 32, capacity: { pax: 189, cargo: 1800 } },
+  "B737BCF": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
+  "B727F": { size: "regional", range: 30, capacity: { pax: 0, cargo: 18000 } },
+  "CONC": { size: "regional", range: 45, capacity: { pax: 100, cargo: 1500 } },
+  "A330": { size: "major", range: 70, capacity: { pax: 300, cargo: 3500 } },
+  "A340": { size: "major", range: 75, capacity: { pax: 340, cargo: 3500 } },
+  "A350": { size: "major", range: 80, capacity: { pax: 350, cargo: 3500 } },
+  "A380": { size: "major", range: 85, capacity: { pax: 555, cargo: 3500 } },
+  "B707": { size: "major", range: 65, capacity: { pax: 189, cargo: 3500 } },
+  "B747": { size: "major", range: 75, capacity: { pax: 416, cargo: 3500 } },
+  "B757": { size: "major", range: 60, capacity: { pax: 239, cargo: 3500 } },
+  "B767": { size: "major", range: 65, capacity: { pax: 290, cargo: 3500 } },
+  "B777": { size: "major", range: 80, capacity: { pax: 396, cargo: 3500 } },
+  "B787": { size: "major", range: 85, capacity: { pax: 336, cargo: 3500 } },
+  "MD11": { size: "major", range: 70, capacity: { pax: 410, cargo: 3500 } },
+  "MD90": { size: "major", range: 55, capacity: { pax: 172, cargo: 3500 } },
+  "B757F": { size: "major", range: 60, capacity: { pax: 0, cargo: 28000 } },
+  "B767F": { size: "major", range: 65, capacity: { pax: 0, cargo: 32000 } },
+  "B777F": { size: "major", range: 80, capacity: { pax: 0, cargo: 102000 } },
+  "MD11F": { size: "major", range: 70, capacity: { pax: 0, cargo: 90000 } },
+  "B747F": { size: "major", range: 75, capacity: { pax: 0, cargo: 113000 } },
+  "ATR72F": { size: "small", range: 15, capacity: { pax: 0, cargo: 7500 } }
 };
 
 const aircraftByAirline = {
-  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B747", "E190"],
-  "NKS": ["A320", "B737"],
-  "BAW": ["A320", "A350", "A380", "B737", "B747", "B757", "B767", "B777", "B787"],
-  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737"],
-  "AAL": ["A320", "B737", "B747", "B757", "B767", "B777", "B787"],
-  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B737", "B747", "B767", "B777", "B787"],
-  "UPS": ["B757F", "B767F", "B747F"],
-  "FDX": ["C208F", "ATR72F", "B737F", "B757F", "B767F", "B777F", "B747F"]
+  "DAL": ["A220", "A320", "A330", "A350", "B717", "B737", "B757", "B767", "B727", "B747", "MD11", "MD90", "CRJ700"],
+  "NKS": ["A320"],
+  "BAW": ["A320", "A350", "A380", "B777", "B787", "B737", "B707", "B727", "B747", "B757", "B767", "CONC", "CRJ700"],
+  "SAS": ["A320", "A330", "A350", "ATR72", "E190", "B737", "B747", "B757", "B767", "MD90"],
+  "AAL": ["A320", "B737", "B777", "B787", "B707", "B727", "B747", "B757", "B767", "MD11", "CRJ700"],
+  "DLH": ["A220", "A320", "A330", "A340", "A350", "A380", "B747", "B767", "B777", "B787", "B707", "B727", "B737"],
+  "UPS": ["B757F", "B767F", "MD11F", "B747F", "B727F"],
+  "FDX": ["B757F", "B767F", "B777F", "MD11F", "ATR72F", "C208F", "B727F", "B737BCF"]
 };
 
 // --- State ---
@@ -395,22 +407,14 @@ function calculateDistance(fromIcao, toIcao) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function findSuitableAircraft(fleet, distance, destType, originType, isCargo) {
-  console.log(`Finding suitable aircraft for distance=${distance}, destType=${destType}, originType=${originType}, isCargo=${isCargo}, fleet=${fleet}`);
+function findSuitableAircraft(fleet, distance, destType, originType) {
   const suitable = fleet.filter(ac => {
     const acData = aircraftData[ac];
-    if (!acData) {
-      console.warn(`No aircraft data for ${ac}`);
-      return false;
-    }
-    if (acData.type !== (isCargo ? 'cargo' : 'pax')) return false;
+    if (!acData) return false;
     const canServeOrigin = typeAllowance[acData.size].has(originType);
     const canServeDest = typeAllowance[acData.size].has(destType);
-    const isSuitable = acData.range >= distance * 0.9 && canServeOrigin && canServeDest;
-    console.log(`Checking ${ac}: type=${acData.type}, range=${acData.range}, canServeOrigin=${canServeOrigin}, canServeDest=${canServeDest}, isSuitable=${isSuitable}`);
-    return isSuitable;
+    return acData.range >= distance * 0.9 && canServeOrigin && canServeDest;
   });
-  console.log(`Suitable aircraft: ${suitable}`);
   return suitable.length ? pick(suitable) : null;
 }
 
@@ -426,12 +430,8 @@ const typeAllowance = {
 };
 
 function generateOffers(n=12) {
-  console.log('Generating offers...');
   const selected = state.airline; 
-  if (!selected) {
-    console.warn('No airline selected');
-    return [];
-  }
+  if (!selected) return [];
   
   const types = Array.from(document.querySelectorAll('.flt-type:checked')).map(i => i.value);
   const allAirports = airportEntries();
@@ -439,11 +439,7 @@ function generateOffers(n=12) {
   
   const isCargo = airlineIsCargo(selected.code);
   const fleet = state.ownedAircraft[selected.code] || [];
-  console.log(`Airline: ${selected.code}, isCargo: ${isCargo}, fleet: ${fleet}`);
-  if (fleet.length === 0) {
-    console.warn('No aircraft in fleet');
-    return [];
-  }
+  if (fleet.length === 0) return [];
   
   const airlineInfo = airlineHubsAndRoutes[selected.code] || { hub: null, routes: [], routeFrequency: 0 };
   const { hub, routes, routeFrequency } = airlineInfo;
@@ -460,7 +456,6 @@ function generateOffers(n=12) {
     fleetCapabilities.regional = fleetCapabilities.regional || minType === 'regional' || minType === 'small';
     fleetCapabilities.major = true;
   });
-  console.log(`Fleet capabilities: ${JSON.stringify(fleetCapabilities)}`);
   
   const pool = allAirports.filter(a => 
     types.includes(a.type) && 
@@ -469,10 +464,7 @@ function generateOffers(n=12) {
      (a.type === 'major' && fleetCapabilities.major))
   );
   
-  if (pool.length < 2) {
-    console.warn('Not enough airports in pool');
-    return [];
-  }
+  if (pool.length < 2) return [];
 
   const now = new Date();
   const minMinutes = 10;
@@ -505,7 +497,7 @@ function generateOffers(n=12) {
             const acData = aircraftData[ac];
             const canServeOrigin = typeAllowance[acData.size].has(o.type);
             const canServeDest = typeAllowance[acData.size].has(dest.type);
-            return acData.type === (isCargo ? 'cargo' : 'pax') && canServeOrigin && canServeDest;
+            return canServeOrigin && canServeDest;
           });
         });
         if (potentialDests.length === 0) continue;
@@ -513,14 +505,11 @@ function generateOffers(n=12) {
       }
       
       distance = calculateDistance(o.icao, d.icao);
-      aircraft = findSuitableAircraft(fleet, distance, d.type, o.type, isCargo);
+      aircraft = findSuitableAircraft(fleet, distance, d.type, o.type);
       attempts++;
     } while ((!aircraft || o.icao === d.icao) && attempts < 50);
     
-    if (!aircraft) {
-      console.warn(`No suitable aircraft found after ${attempts} attempts`);
-      continue;
-    }
+    if (!aircraft) continue;
     
     const baseSpeed = aircraftData[aircraft].range / 2.5;
     const minutes = Math.max(8, Math.min(22, Math.round(distance * 12 / baseSpeed) + 6));
@@ -554,7 +543,6 @@ function generateOffers(n=12) {
     };
     offers.push(offer);
   }
-  console.log(`Generated ${offers.length} offers`);
   return offers;
 }
 
@@ -915,18 +903,10 @@ function renderOpsModal(f) {
   const tpl = getTemplateForFlight(f);
   const cont = el('#opsContent');
   const hint = el('#opsHint');
-  const header = el('#opsHeader');
-  if (!cont || !hint || !header) return;
+  if (!cont || !hint) return;
 
   const acData = aircraftData[f.aircraft] || {};
   const allDone = tpl.every(t => f.ops.tasks[t.key].status === 'done');
-
-  header.innerHTML = `
-    <div class="btn-row">
-      <button class="btn good" id="opsQuick"><span class="btn-icon material-icons-round">fast_forward</span><span>Quick Turn</span></button>
-      <button class="btn primary" id="opsLoadSheet"><span class="btn-icon material-icons-round">description</span><span>Request Load Sheet</span></button>
-      <button class="btn warn" id="opsClose"><span class="btn-icon material-icons-round">close</span><span>Close</span></button>
-    </div>`;
 
   cont.innerHTML = `
     <div class="banner"><div>
@@ -1013,9 +993,6 @@ function renderOpsModal(f) {
       if (closeLoadSheetBtn) closeLoadSheetBtn.onclick = () => renderOpsModal(f);
     };
   }
-
-  const closeOpsBtn = el('#opsClose');
-  if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
 }
 
 function startTask(f, key) {
@@ -1110,8 +1087,124 @@ function getOrCreateLoadSheet(f) {
 }
 
 // --- Shop and Airlines ---
+function renderAirlines() {
+  const commercialEl = el('#commercialList');
+  const cargoEl = el('#cargoList');
+
+  const renderInfoCard = (name, code) => {
+    const color = airlineColors[code] || {};
+    const isCargo = airlineIsCargo(code);
+    const info = airlineHubsAndRoutes[code] || { hub: null, routes: [], description: '' };
+    const hub = info.hub || 'None';
+    const routes = (info.routes && info.routes.length) ? info.routes.join(', ') : 'Various';
+    const fleet = (state.ownedAircraft[code] || []).map(ac => {
+      const acData = aircraftData[ac] || {};
+      const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
+      return `<span class="fleet-tag" title="${ac}"><span class="material-icons-round" style="font-size: 1em;">${typeIcon}</span> ${ac}</span>`;
+    }).join('');
+
+    return `
+      <div class="card airline-card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <div class="airline-logo-container">
+            <img src="airline_icons/${code}.png" alt="${name} Logo" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${color.color||'#fff'};font-weight:bold;font-size:0.9rem\\'>${code}</div>'">
+          </div>
+          <div style="min-width:0; flex:1">
+            <div style="font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
+            <div class="muted" style="font-size:.85rem">ICAO <span class="highlight">•</span> <span class="code">${code}</span> · <span class="tag ${isCargo ? 'tag-cargo' : 'tag-pax'}">${isCargo ? 'Cargo' : 'Passenger'}</span></div>
+          </div>
+        </div>
+        <div class="muted" style="font-size:.9rem; line-height:1.5; margin-bottom:10px;">${info.description || 'No description available.'}</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Hub</div>
+            <div class="info-value"><span class="highlight">${hub}</span></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Main Routes</div>
+            <div class="info-value" style="line-height:1.5">${routes}</div>
+          </div>
+          <div class="info-item" style="grid-column:1 / -1">
+            <div class="info-label">Fleet</div>
+            <div class="info-value" data-field="fleet"><div class="fleet-list">${fleet}</div></div>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  commercialEl.innerHTML = Object.entries(commercialAirlines).map(([name, code]) => renderInfoCard(name, code)).join('');
+  cargoEl.innerHTML = Object.entries(cargoAirlines).map(([name, code]) => renderInfoCard(name, code)).join('');
+  renderModalAirlines();
+}
+
+function renderModalAirlines() {
+  const commercialEl = el('#modalCommercialAirlines');
+  const cargoEl = el('#modalCargoAirlines');
+  
+  const renderPill = (name, code) => {
+    const isUnlocked = state.unlockedAirlines.includes(code);
+    const cost = unlockCosts[code] || 0;
+    let buttonHtml = '';
+    if (isUnlocked) {
+      buttonHtml = `<button class="btn primary select-airline" data-code="${code}" data-name="${name}"><span class="btn-icon material-icons-round">check</span><span>Select</span></button>`;
+    } else if (code !== 'FDX') {
+      buttonHtml = `<button class="btn primary buy-airline" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">lock_open</span><span>Unlock for $${cost}</span></button>`;
+    }
+    return `
+      <div class="airline-pill ${isUnlocked ? '' : 'locked'}" data-code="${code}" data-name="${name}">
+        <div class="airline-logo-container">
+          <img src="airline_icons/${code}.png" alt="${name}" class="airline-logo-img" onerror="this.onerror=null; this.parentElement.textContent='${code}'; this.remove();" />
+        </div>
+        <div style="flex:1; min-width:0">
+          <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${name}</div>
+          <div class="muted" style="font-size:.85rem">${code}</div>
+        </div>
+        ${buttonHtml}
+      </div>`;
+  };
+  
+  commercialEl.innerHTML = Object.entries(commercialAirlines).map(([name, code]) => renderPill(name, code)).join('');
+  cargoEl.innerHTML = Object.entries(cargoAirlines).map(([name, code]) => renderPill(name, code)).join('');
+  
+  document.querySelectorAll('.select-airline').forEach(btn => {
+    btn.onclick = () => {
+      const code = btn.dataset.code;
+      const name = btn.dataset.name;
+      state.airline = { code, name };
+      state.offers = [];
+      state.flightPlans = {};
+      state.lastGenerated = 0;
+      save();
+      closeAirlineModal();
+      renderSelectedAirline();
+      renderOffers();
+      renderShop();
+      toast(`Selected ${name}`);
+    };
+  });
+  
+  document.querySelectorAll('.buy-airline').forEach(btn => {
+    btn.onclick = () => {
+      const code = btn.dataset.code;
+      const cost = unlockCosts[code];
+      if (state.currency >= cost) {
+        state.currency -= cost;
+        state.unlockedAirlines.push(code);
+        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
+        save();
+        updateCurrencyDisplay();
+        renderModalAirlines();
+        renderShop();
+        renderAirlines();
+        toast(`Unlocked ${airlineList()[code]} for $${cost}`);
+      } else {
+        toast('Not enough currency');
+      }
+    };
+  });
+}
+
 function renderShop() {
-  console.log('Rendering shop...');
   const shopEl = el('#shopList');
   const fleetEl = el('#fleetList');
   const allAirlines = { ...commercialAirlines, ...cargoAirlines };
@@ -1152,8 +1245,6 @@ function renderShop() {
     const owned = (state.ownedAircraft[code] || []).includes(aircraft);
     const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
     const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
-    const isCorrectType = acData.type === (isCargo ? 'cargo' : 'pax');
-    console.log(`Rendering aircraft ${aircraft} for ${code}: owned=${owned}, isCorrectType=${isCorrectType}`);
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
@@ -1166,7 +1257,7 @@ function renderShop() {
         <div class="btn-row">
           ${owned ? 
             `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost || !isCorrectType ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
+            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
         </div>
       </div>`;
   };
@@ -1174,17 +1265,11 @@ function renderShop() {
   const availableAircraft = state.unlockedAirlines
     .filter(code => aircraftByAirline[code])
     .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
-    .filter(({ aircraft, code }) => {
-      const isCargo = airlineIsCargo(code);
-      const acData = aircraftData[aircraft] || {};
-      return acData.type === (isCargo ? 'cargo' : 'pax');
-    })
     .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
 
-  console.log(`Available aircraft for shop: ${JSON.stringify(availableAircraft)}`);
-  fleetEl.innerHTML = availableAircraft.length ? availableAircraft
+  fleetEl.innerHTML = availableAircraft
     .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
-    .join('') : '<div class="muted">No aircraft available. Unlock airlines or purchase aircraft.</div>';
+    .join('');
 
   shopEl.querySelectorAll('.buy-airline').forEach(btn => {
     btn.onclick = () => {
