@@ -1239,25 +1239,15 @@ function renderShop() {
     .map(([name, code]) => renderShopCard(name, code))
     .join('');
 
-  // Render aircraft cards for purchase, showing only unlocked airlines that use them
-  const renderFleetCard = (aircraft) => {
+  // Render aircraft cards for purchase
+  const renderFleetCard = (aircraft, code) => {
     const acData = aircraftData[aircraft] || { capacity: { pax: 0, cargo: 0 }, size: 'major', range: 0 };
+    const isCargo = airlineIsCargo(code);
     const cost = aircraftCosts[aircraft] || 100;
-    
-    // Get all unlocked airlines that operate this aircraft
-    const operatingAirlines = state.unlockedAirlines
-      .filter(code => aircraftByAirline[code]?.includes(aircraft))
-      .map(code => allAirlines[code]);
-    
-    // Check if the aircraft is owned by any unlocked airline
-    const isOwned = state.unlockedAirlines.some(code => 
-      (state.ownedAircraft[code] || []).includes(aircraft)
-    );
-    
-    const isCargo = operatingAirlines.some(name => Object.keys(cargoAirlines).includes(name));
+    const owned = (state.ownedAircraft[code] || []).includes(aircraft);
     const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
     const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
-    
+    const airlineName = allAirlines[code] || code;
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
@@ -1265,28 +1255,25 @@ function renderShop() {
             <div style="font-weight:800">${aircraft}</div>
             <div class="muted" style="font-size:.85rem">Capacity: ${capacityText} | Range: ${acData.range} units</div>
             <div class="muted" style="font-size:.85rem">${badge(acData.size)}</div>
-            ${operatingAirlines.length ? `<div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: ${operatingAirlines.join(', ')}</div>` : '<div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: None</div>'}
+            <div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: ${airlineName}</div>
           </div>
         </div>
         <div class="btn-row">
-          ${isOwned ? 
+          ${owned ? 
             `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            operatingAirlines.length ? 
-              `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>` : 
-              `<span class="chip warn">Not available</span>`}
+            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
         </div>
       </div>`;
   };
 
-  // Get unique aircraft from unlocked airlines
-  const availableAircraft = [...new Set(
-    state.unlockedAirlines
-      .filter(code => aircraftByAirline[code])
-      .flatMap(code => aircraftByAirline[code])
-  )].sort((a, b) => aircraftCosts[a] - aircraftCosts[b]);
+  // Get aircraft from unlocked airlines, ensuring each aircraft is tied to its airline
+  const availableAircraft = state.unlockedAirlines
+    .filter(code => aircraftByAirline[code])
+    .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
+    .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
 
   fleetEl.innerHTML = availableAircraft
-    .map(aircraft => renderFleetCard(aircraft))
+    .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
     .join('');
 
   shopEl.querySelectorAll('.buy-airline').forEach(btn => {
@@ -1312,19 +1299,12 @@ function renderShop() {
   fleetEl.querySelectorAll('.buy-aircraft').forEach(btn => {
     btn.onclick = () => {
       const aircraft = btn.dataset.aircraft;
+      const code = btn.dataset.code;
       const cost = aircraftCosts[aircraft];
-      // Find an unlocked airline that operates this aircraft
-      const targetAirline = state.unlockedAirlines.find(code => 
-        aircraftByAirline[code]?.includes(aircraft)
-      );
-      if (!targetAirline) {
-        toast('No unlocked airline operates this aircraft');
-        return;
-      }
       if (state.currency >= cost) {
         state.currency -= cost;
-        state.ownedAircraft[targetAirline] = state.ownedAircraft[targetAirline] || [];
-        state.ownedAircraft[targetAirline].push(aircraft);
+        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
+        state.ownedAircraft[code].push(aircraft);
         save();
         updateCurrencyDisplay();
         renderShop();
@@ -1338,7 +1318,6 @@ function renderShop() {
     };
   });
 }
-
 // --- Modal Handlers ---
 function openAirlineModal() {
   const modal = el('#airlineModal');
