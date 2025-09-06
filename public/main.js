@@ -1208,7 +1208,8 @@ function renderShop() {
   const shopEl = el('#shopList');
   const fleetEl = el('#fleetList');
   const allAirlines = { ...commercialAirlines, ...cargoAirlines };
-  
+
+  // Render airline cards for unlocking
   const renderShopCard = (name, code) => {
     const isUnlocked = state.unlockedAirlines.includes(code);
     const cost = unlockCosts[code] || 0;
@@ -1238,99 +1239,25 @@ function renderShop() {
     .map(([name, code]) => renderShopCard(name, code))
     .join('');
 
-  const renderFleetCard = (aircraft, code) => {
+  // Render aircraft cards for purchase, showing only unlocked airlines that use them
+  const renderFleetCard = (aircraft) => {
     const acData = aircraftData[aircraft] || { capacity: { pax: 0, cargo: 0 }, size: 'major', range: 0 };
-    const isCargo = airlineIsCargo(code);
     const cost = aircraftCosts[aircraft] || 100;
-    const owned = (state.ownedAircraft[code] || []).includes(aircraft);
-    const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
-    const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
-    // Find all unlocked airlines that operate this aircraft
+    
+    // Get all unlocked airlines that operate this aircraft
     const operatingAirlines = state.unlockedAirlines
-      .filter(airlineCode => aircraftByAirline[airlineCode]?.includes(aircraft))
-      .map(airlineCode => allAirlines[airlineCode])
-      .join(', ');
-    return `
-      <div class="card shop-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-          <div style="flex:1">
-            <div style="font-weight:800">${aircraft}</div>
-            <div class="muted" style="font-size:.85rem">Capacity: ${capacityText} | Range: ${acData.range} units</div>
-            <div class="muted" style="font-size:.85rem">${badge(acData.size)}</div>
-            ${operatingAirlines ? `<div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: ${operatingAirlines}</div>` : ''}
-          </div>
-        </div>
-        <div class="btn-row">
-          ${owned ? 
-            `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
-        </div>
-      </div>`;
-  };
-
-  const availableAircraft = state.unlockedAirlines
-    .filter(code => aircraftByAirline[code])
-    .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
-    .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
-
-  fleetEl.innerHTML = availableAircraft
-    .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
-    .join('');
-
-  shopEl.querySelectorAll('.buy-airline').forEach(btn => {
-    btn.onclick = () => {
-      const code = btn.dataset.code;
-      const cost = unlockCosts[code];
-      if (state.currency >= cost) {
-        state.currency -= cost;
-        state.unlockedAirlines.push(code);
-        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
-        save();
-        updateCurrencyDisplay();
-        renderShop();
-        renderAirlines();
-        renderModalAirlines();
-        toast(`Unlocked ${allAirlines[code]} for $${cost}`);
-      } else {
-        toast('Not enough currency');
-      }
-    };
-  });
-
-  fleetEl.querySelectorAll('.buy-aircraft').forEach(btn => {
-    btn.onclick = () => {
-      const aircraft = btn.dataset.aircraft;
-      const code = btn.dataset.code;
-      const cost = aircraftCosts[aircraft];
-      if (state.currency >= cost) {
-        state.currency -= cost;
-        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
-        state.ownedAircraft[code].push(aircraft);
-        save();
-        updateCurrencyDisplay();
-        renderShop();
-        renderAirlines();
-        renderSelectedAirline();
-        renderOffers();
-        toast(`Purchased ${aircraft} for $${cost}`);
-      } else {
-        toast('Not enough currency');
-      }
-    };
-  });
-}
-
-  shopEl.innerHTML = Object.entries(allAirlines)
-    .map(([name, code]) => renderShopCard(name, code))
-    .join('');
-
-  const renderFleetCard = (aircraft, code) => {
-    const acData = aircraftData[aircraft] || { capacity: { pax: 0, cargo: 0 }, size: 'major', range: 0 };
-    const isCargo = airlineIsCargo(code);
-    const cost = aircraftCosts[aircraft] || 100;
-    const owned = (state.ownedAircraft[code] || []).includes(aircraft);
+      .filter(code => aircraftByAirline[code]?.includes(aircraft))
+      .map(code => allAirlines[code]);
+    
+    // Check if the aircraft is owned by any unlocked airline
+    const isOwned = state.unlockedAirlines.some(code => 
+      (state.ownedAircraft[code] || []).includes(aircraft)
+    );
+    
+    const isCargo = operatingAirlines.some(name => Object.keys(cargoAirlines).includes(name));
     const capacityText = isCargo ? `${acData.capacity.cargo}kg cargo` : `${acData.capacity.pax} pax`;
     const typeIcon = acData.size === 'small' ? 'flight' : acData.size === 'regional' ? 'airplanemode_active' : 'airplane_ticket';
+    
     return `
       <div class="card shop-card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
@@ -1338,23 +1265,28 @@ function renderShop() {
             <div style="font-weight:800">${aircraft}</div>
             <div class="muted" style="font-size:.85rem">Capacity: ${capacityText} | Range: ${acData.range} units</div>
             <div class="muted" style="font-size:.85rem">${badge(acData.size)}</div>
+            ${operatingAirlines.length ? `<div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: ${operatingAirlines.join(', ')}</div>` : '<div class="muted" style="font-size:.85rem; margin-top:4px;">Used by: None</div>'}
           </div>
         </div>
         <div class="btn-row">
-          ${owned ? 
+          ${isOwned ? 
             `<span class="chip good"><span class="material-icons-round" style="font-size: 1em;">check_circle</span> Owned</span>` : 
-            `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" data-code="${code}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>`}
+            operatingAirlines.length ? 
+              `<button class="btn primary buy-aircraft" data-aircraft="${aircraft}" ${state.currency < cost ? 'disabled' : ''}><span class="btn-icon material-icons-round">add_shopping_cart</span><span>Buy for $${cost}</span></button>` : 
+              `<span class="chip warn">Not available</span>`}
         </div>
       </div>`;
   };
 
-  const availableAircraft = state.unlockedAirlines
-    .filter(code => aircraftByAirline[code])
-    .flatMap(code => aircraftByAirline[code].map(aircraft => ({ aircraft, code })))
-    .sort((a, b) => aircraftCosts[a.aircraft] - aircraftCosts[b.aircraft]);
+  // Get unique aircraft from unlocked airlines
+  const availableAircraft = [...new Set(
+    state.unlockedAirlines
+      .filter(code => aircraftByAirline[code])
+      .flatMap(code => aircraftByAirline[code])
+  )].sort((a, b) => aircraftCosts[a] - aircraftCosts[b]);
 
   fleetEl.innerHTML = availableAircraft
-    .map(({ aircraft, code }) => renderFleetCard(aircraft, code))
+    .map(aircraft => renderFleetCard(aircraft))
     .join('');
 
   shopEl.querySelectorAll('.buy-airline').forEach(btn => {
@@ -1380,12 +1312,19 @@ function renderShop() {
   fleetEl.querySelectorAll('.buy-aircraft').forEach(btn => {
     btn.onclick = () => {
       const aircraft = btn.dataset.aircraft;
-      const code = btn.dataset.code;
       const cost = aircraftCosts[aircraft];
+      // Find an unlocked airline that operates this aircraft
+      const targetAirline = state.unlockedAirlines.find(code => 
+        aircraftByAirline[code]?.includes(aircraft)
+      );
+      if (!targetAirline) {
+        toast('No unlocked airline operates this aircraft');
+        return;
+      }
       if (state.currency >= cost) {
         state.currency -= cost;
-        state.ownedAircraft[code] = state.ownedAircraft[code] || [];
-        state.ownedAircraft[code].push(aircraft);
+        state.ownedAircraft[targetAirline] = state.ownedAircraft[targetAirline] || [];
+        state.ownedAircraft[targetAirline].push(aircraft);
         save();
         updateCurrencyDisplay();
         renderShop();
