@@ -767,11 +767,6 @@ function renderFlights() {
       toast('Complete ground operations before starting');
       return;
     }
-    const isOnGround = await checkAircraftOnGround(f);
-    if (!isOnGround) {
-      toast('Aircraft must be on the ground to start');
-      return;
-    }
     updateFlight(b.dataset.start, 'enroute');
   });
   body.querySelectorAll('[data-complete]').forEach(b => b.onclick = () => {
