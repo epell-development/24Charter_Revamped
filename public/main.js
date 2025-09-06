@@ -45,7 +45,7 @@ function init() {
     };
   });
 
-  const closeOpsBtn = el('#closeOps');
+  const closeOpsBtn = el('#opsClose');
   if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
 }
 
@@ -905,7 +905,7 @@ function renderOpsModal(f) {
   const hint = el('#opsHint');
   if (!cont || !hint) return;
 
-  const acData = aircraftData[f.aircraft] || { capacity: { pax: 150, cargo: 1800 } };
+  const acData = aircraftData[f.aircraft] || {};
   const allDone = tpl.every(t => f.ops.tasks[t.key].status === 'done');
 
   cont.innerHTML = `
@@ -932,11 +932,8 @@ function renderOpsModal(f) {
             <div class="progress"><div style="width:${task.progress||0}%"></div></div>
           </div>`;
       }).join('')}
-    </div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn primary" id="opsQuick"><span class="btn-icon material-icons-round">fast_forward</span><span>Quick Complete</span></button>
-      <button class="btn primary" id="opsLoadSheet"><span class="btn-icon material-icons-round">description</span><span>Request Load Sheet</span></button>
     </div>`;
+
   hint.innerHTML = allDone ? 'All tasks complete. You may depart.' : 'Complete all tasks to enable pushback.';
 
   cont.querySelectorAll('[data-start]').forEach(b => b.onclick = () => startTask(f, b.dataset.start));
