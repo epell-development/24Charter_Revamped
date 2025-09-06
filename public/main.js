@@ -220,36 +220,42 @@ function loadState() {
 let sseFlightPlans = null;
 
 function initFlightPlanListener() {
-  sseFlightPlans = new EventSource('/api/flight-plans');
-  sseFlightPlans.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.t === 'FLIGHT_PLAN') {
-      const fp = data.d;
-      const flight = state.flights.find(f => {
-        const callsign = `${f.code}${f.flight.replace(f.code, '')}`;
-        return callsign === fp.callsign &&
-               fp.aircraft === f.aircraft &&
-               fp.departing === f.from &&
-               fp.arriving === f.to;
-      });
-      if (flight) {
-        state.flightPlans[flight.id] = {
-          callsign: fp.callsign,
-          aircraft: fp.aircraft,
-          departing: fp.departing,
-          arriving: fp.arriving,
-          validated: true
-        };
-        save();
-        renderFlights();
-        toast(`Flight plan validated for ${fp.callsign}`);
+  try {
+    sseFlightPlans = new EventSource('/api/flight-plans');
+    sseFlightPlans.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.t === 'FLIGHT_PLAN') {
+        const fp = data.d;
+        const flight = state.flights.find(f => {
+          const callsign = `${f.code}${f.flight.replace(f.code, '')}`;
+          return callsign === fp.callsign &&
+                 fp.aircraft === f.aircraft &&
+                 fp.departing === f.from &&
+                 fp.arriving === f.to;
+        });
+        if (flight) {
+          state.flightPlans[flight.id] = {
+            callsign: fp.callsign,
+            aircraft: fp.aircraft,
+            departing: fp.departing,
+            arriving: fp.arriving,
+            validated: true
+          };
+          save();
+          renderFlights();
+          toast(`Flight plan validated for ${fp.callsign}`);
+        }
       }
-    }
-  };
-  sseFlightPlans.onerror = () => {
-    toast('Error connecting to flight plan updates. Retrying...');
+    };
+    sseFlightPlans.onerror = () => {
+      toast('Error connecting to flight plan updates. Retrying...');
+      setTimeout(initFlightPlanListener, 5000);
+    };
+  } catch (e) {
+    console.error('Failed to initialize flight plan listener:', e);
+    toast('Flight plan updates unavailable. Check server status.');
     setTimeout(initFlightPlanListener, 5000);
-  };
+  }
 }
 
 async function checkAircraftOnGround(flight) {
@@ -293,8 +299,11 @@ const seededBetween = (min, max, seed) => {
 
 function toast(msg) {
   const t = el('#toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 5000);
+  if (t) {
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 5000);
+  }
 }
 
 function airlineList() {
@@ -773,7 +782,7 @@ function renderFlights() {
       toast('Awaiting valid flight plan');
       return;
     }
-    if (!f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
+    if (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
       toast('Complete ground operations before starting');
       return;
     }
@@ -831,15 +840,23 @@ function openOps(id) {
   if (!f) return;
   ensureOps(f);
   renderOpsModal(f);
-  el('#opsModal').classList.add('active');
+  const opsModal = el('#opsModal');
+  if (opsModal) opsModal.classList.add('active');
 }
-function closeOps() { el('#opsModal').classList.remove('active'); }
+function closeOps() {
+  const opsModal = el('#opsModal');
+  if (opsModal) opsModal.classList.remove('active');
+}
 
 function renderOpsModal(f) {
   const tpl = getTemplateForFlight(f);
   const cont = el('#opsContent');
   const hint = el('#opsHint');
+  if (!cont || !hint) return;
+
+  const acData = aircraftData[f.aircraft] || { capacity: { pax: 150, cargo: 1800 } };
   const allDone = tpl.every(t => f.ops.tasks[t.key].status === 'done');
+
   cont.innerHTML = `
     <div class="banner"><div>
       <div style="font-weight:800">${f.code}${f.flight.replace(f.code,'')} • ${f.aircraft}</div>
@@ -864,47 +881,70 @@ function renderOpsModal(f) {
             <div class="progress"><div style="width:${task.progress||0}%"></div></div>
           </div>`;
       }).join('')}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn primary" id="opsQuick"><span class="btn-icon material-icons-round">fast_forward</span><span>Quick Complete</span></button>
+      <button class="btn primary" id="opsLoadSheet"><span class="btn-icon material-icons-round">description</span><span>Request Load Sheet</span></button>
     </div>`;
   hint.innerHTML = allDone ? 'All tasks complete. You may depart.' : 'Complete all tasks to enable pushback.';
 
   cont.querySelectorAll('[data-start]').forEach(b => b.onclick = () => startTask(f, b.dataset.start));
   cont.querySelectorAll('[data-complete]').forEach(b => b.onclick = () => completeTask(f, b.dataset.complete));
   cont.querySelectorAll('[data-stop]').forEach(b => b.onclick = () => stopTask(f, b.dataset.stop));
-  el('#opsQuick').onclick = () => {
-    const t = getTemplateForFlight(f); t.forEach(x => { f.ops.tasks[x.key]={status:'done', progress:100}; }); save(); renderOpsModal(f); toast('All ground ops complete');
-  };
-  el('#opsLoadSheet').onclick = () => {
-    const ls = getOrCreateLoadSheet(f);
-    const isCargo = airlineIsCargo(f.code);
-    const totalWeight = isCargo ? ls.cargo + ls.fuel : ls.passengers * 80 + ls.cargo + ls.fuel;
-    const loadSheet = `
-      <div class="load-sheet">
-        <h3>Load Sheet for ${f.code}${f.flight.replace(f.code,'')}</h3>
-        <div class="load-sheet-grid">
-          <div class="load-sheet-item">
-            <span class="label">${isCargo ? 'Cargo' : 'Passengers'}</span>
-            <span class="value">${isCargo ? ls.cargo : ls.passengers}${isCargo ? 'kg' : ''}</span>
+
+  const quickBtn = el('#opsQuick');
+  if (quickBtn) {
+    quickBtn.onclick = () => {
+      const t = getTemplateForFlight(f);
+      t.forEach(x => { f.ops.tasks[x.key]={status:'done', progress:100}; });
+      save();
+      renderOpsModal(f);
+      toast('All ground ops complete');
+    };
+  }
+
+  const loadSheetBtn = el('#opsLoadSheet');
+  if (loadSheetBtn) {
+    loadSheetBtn.onclick = () => {
+      const ls = getOrCreateLoadSheet(f);
+      const isCargo = airlineIsCargo(f.code);
+      const totalWeight = isCargo ? ls.cargo + ls.fuel : ls.passengers * 80 + ls.cargo + ls.fuel;
+      const utilization = Math.round((isCargo ? ls.cargo / acData.capacity.cargo : ls.passengers / acData.capacity.pax) * 100);
+      const loadSheet = `
+        <div class="load-sheet">
+          <h3>Load Sheet for ${f.code}${f.flight.replace(f.code,'')}</h3>
+          <div class="load-sheet-grid">
+            <div class="load-sheet-item">
+              <span class="label">${isCargo ? 'Cargo' : 'Passengers'}</span>
+              <span class="value">${isCargo ? `${ls.cargo}kg` : ls.passengers}</span>
+            </div>
+            <div class="load-sheet-item">
+              <span class="label">Baggage/Cargo</span>
+              <span class="value">${ls.cargo}kg</span>
+            </div>
+            <div class="load-sheet-item">
+              <span class="label">Fuel</span>
+              <span class="value">${ls.fuel}kg</span>
+            </div>
+            <div class="load-sheet-item">
+              <span class="label">Total Weight</span>
+              <span class="value">${totalWeight}kg</span>
+            </div>
+            <div class="load-sheet-item total">
+              <span class="label">Capacity Utilization</span>
+              <span class="value">${utilization}%</span>
+            </div>
           </div>
-          <div class="load-sheet-item">
-            <span class="label">Fuel</span>
-            <span class="value">${ls.fuel}kg</span>
+          <div class="load-sheet-progress">
+            <div class="load-sheet-progress-bar" style="width:${utilization}%"></div>
           </div>
-          <div class="load-sheet-item">
-            <span class="label">Total Weight</span>
-            <span class="value">${totalWeight}kg</span>
-          </div>
-          <div class="load-sheet-item total">
-            <span class="label">Capacity Utilization</span>
-            <span class="value">${Math.round((isCargo ? ls.cargo / acData.capacity.cargo : ls.passengers / acData.capacity.pax) * 100)}%</span>
-          </div>
-        </div>
-        <div class="load-sheet-progress">
-          <div class="load-sheet-progress-bar" style="width:${Math.round((isCargo ? ls.cargo / acData.capacity.cargo : ls.passengers / acData.capacity.pax) * 100)}%"></div>
-        </div>
-      </div>`;
-    cont.innerHTML = loadSheet + cont.innerHTML;
-  };
-  el('#opsClose').onclick = closeOps;
+          <button class="btn primary" id="closeLoadSheet" style="margin-top:12px">Close Load Sheet</button>
+        </div>`;
+      cont.innerHTML = loadSheet;
+      const closeLoadSheetBtn = el('#closeLoadSheet');
+      if (closeLoadSheetBtn) closeLoadSheetBtn.onclick = () => renderOpsModal(f);
+    };
+  }
 }
 
 function startTask(f, key) {
@@ -1228,19 +1268,23 @@ function renderShop() {
 
 // --- Modal Handlers ---
 function openAirlineModal() {
-  el('#airlineModal').classList.add('active');
+  const modal = el('#airlineModal');
+  if (modal) modal.classList.add('active');
 }
 
 function closeAirlineModal() {
-  el('#airlineModal').classList.remove('active');
+  const modal = el('#airlineModal');
+  if (modal) modal.classList.remove('active');
 }
 
 // --- Tab Navigation ---
 function switchTab(tab) {
   els('.tab').forEach(t => t.classList.remove('active'));
   els('.content').forEach(c => c.style.display = 'none');
-  el(`.tab[data-tab="${tab}"]`).classList.add('active');
-  el(`#tab-${tab}`).style.display = 'block';
+  const tabEl = el(`.tab[data-tab="${tab}"]`);
+  const contentEl = el(`#tab-${tab}`);
+  if (tabEl) tabEl.classList.add('active');
+  if (contentEl) contentEl.style.display = 'block';
   
   if (tab === 'offers') renderOffers();
   else if (tab === 'flights') renderFlights();
@@ -1275,28 +1319,39 @@ function init() {
     tab.onclick = () => switchTab(tab.dataset.tab);
   });
 
-  el('#openAirlines').onclick = openAirlineModal;
-  el('#bannerChoose').onclick = openAirlineModal;
-  el('#closeModal').onclick = closeAirlineModal;
+  const openAirlinesBtn = el('#openAirlines');
+  if (openAirlinesBtn) openAirlinesBtn.onclick = openAirlineModal;
 
-  el('#refreshOffers').onclick = () => {
-    state.offers = [];
-    state.lastGenerated = 0;
-    renderOffers();
-    toast('Offers refreshed');
-  };
+  const bannerChooseBtn = el('#bannerChoose');
+  if (bannerChooseBtn) bannerChooseBtn.onclick = openAirlineModal;
 
-  el('#searchOffers').oninput = e => filterOffers(e.target.value.trim().toLowerCase());
-  el('#clearOfferSearch').onclick = () => {
-    el('#searchOffers').value = '';
-    filterOffers('');
-  };
+  const closeModalBtn = el('#closeModal');
+  if (closeModalBtn) closeModalBtn.onclick = closeAirlineModal;
 
-  els('.flt-type').forEach(cb => cb.onchange = () => {
-    state.offers = [];
-    state.lastGenerated = 0;
-    renderOffers();
+  const refreshOffersBtn = el('#refreshOffers');
+  if (refreshOffersBtn) {
+    refreshOffersBtn.onclick = () => {
+      state.offers = [];
+      state.lastGenerated = 0;
+      renderOffers();
+      toast('Offers refreshed');
+    };
+  }
+
+  const searchOffers = el('#searchOffers');
+  if (searchOffers) {
+    searchOffers.oninput = () => filterOffers(searchOffers.value.trim().toLowerCase());
+  }
+
+  const filterTypes = els('.flt-type');
+  filterTypes.forEach(ft => {
+    ft.onchange = () => {
+      state.offers = [];
+      state.lastGenerated = 0;
+      renderOffers();
+    };
   });
-}
 
-document.addEventListener('DOMContentLoaded', init);
+  const closeOpsBtn = el('#closeOps');
+  if (closeOpsBtn) closeOpsBtn.onclick = closeOps;
+}
