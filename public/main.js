@@ -9,7 +9,7 @@ const state = {
   currency: 0,
   unlockedAirlines: ["FDX"],
   ownedAircraft: { "FDX": ["C208F"] },
-  flightPlans: {},
+  flightPlans: {}, // { flightId: { callsign, aircraft, departing, arriving, validated: boolean } }
   lastGenerated: 0
 };
 
@@ -108,45 +108,6 @@ async function checkAircraftOnGround(flight) {
     console.error('Error fetching aircraft data:', e);
     toast('Unable to verify aircraft status');
     return false;
-  }
-}
-
-async function submitFlightPlan(flight) {
-  const callsign = `${flight.code}${flight.flight.replace(flight.code, '')}`;
-  const flightPlan = {
-    robloxName: 'Player', // Replace with actual user input/auth
-    callsign: callsign,
-    realcallsign: callsign,
-    aircraft: flight.aircraft,
-    flightrules: 'IFR',
-    departing: flight.from,
-    arriving: flight.to,
-    route: 'GPS DIRECT',
-    flightlevel: '030'
-  };
-  try {
-    const response = await fetch('/api/submit-flight-plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(flightPlan)
-    });
-    if (response.ok) {
-      toast(`Flight plan submitted for ${callsign}. Awaiting validation...`);
-      state.flightPlans[flight.id] = {
-        callsign: flightPlan.callsign,
-        aircraft: flightPlan.aircraft,
-        departing: flightPlan.departing,
-        arriving: flightPlan.arriving,
-        validated: false
-      };
-      save();
-      renderFlights();
-    } else {
-      toast('Failed to submit flight plan');
-    }
-  } catch (e) {
-    console.error('Error submitting flight plan:', e);
-    toast('Error submitting flight plan');
   }
 }
 
@@ -640,10 +601,6 @@ function renderFlights() {
         <td><span class="chip ${isFlightPlanValid ? 'good' : 'warn'}">${flightPlanStatus}</span></td>
         <td>
           <div class="btn-row">
-            <button class="btn primary" data-file-plan="${f.id}">
-              <span class="btn-icon material-icons-round">description</span>
-              <span>File Plan</span>
-            </button>
             ${f.status==='scheduled' ? `<button class="btn good" data-ops="${f.id}"><span class="btn-icon material-icons-round">tune</span><span>Ground Ops</span></button>` : ''}
             ${f.status==='scheduled'? `<button class="btn primary" data-start="${f.id}" ${!isFlightPlanValid || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done' ? 'disabled' : ''}><span class="btn-icon material-icons-round">flight_takeoff</span><span>Start</span></button>`:''}
             ${f.status==='enroute'? `<button class="btn primary" data-complete="${f.id}"><span class="btn-icon material-icons-round">check_circle</span><span>Complete</span></button>`:''}
@@ -653,20 +610,11 @@ function renderFlights() {
       </tr>`;
   }).join('');
 
-  body.querySelectorAll('[data-file-plan]').forEach(btn => {
-    btn.onclick = () => {
-      const flight = state.flights.find(x => x.id === btn.dataset.filePlan);
-      if (flight) {
-        submitFlightPlan(flight);
-      }
-    };
-  });
-
   body.querySelectorAll('[data-start]').forEach(b => b.onclick = async () => {
     const f = state.flights.find(x => x.id === b.dataset.start);
     if (!f) return;
     if (!state.flightPlans[f.id]?.validated) {
-      toast('Submit a valid flight plan before starting');
+      toast('Awaiting valid flight plan');
       return;
     }
     if (!f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
@@ -849,7 +797,7 @@ function updateFlight(id, newStatus) {
   const f = state.flights.find(x => x.id === id); if (!f) return;
   if (newStatus === 'enroute') {
     if (!state.flightPlans[f.id]?.validated) {
-      toast('Submit a valid flight plan before starting');
+      toast('Awaiting valid flight plan');
       return;
     }
     if (!f.ops || !f.ops.tasks.pushback || f.ops.tasks.pushback.status !== 'done') {
@@ -957,6 +905,7 @@ function renderModalAirlines() {
       const name = btn.dataset.name;
       state.airline = { code, name };
       state.offers = [];
+      state.flightPlans = {};
       state.lastGenerated = 0;
       save();
       closeAirlineModal();
