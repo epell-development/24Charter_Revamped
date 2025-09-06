@@ -1,5 +1,81 @@
 // --- Data ---
-// [Existing data: commercialAirlines, cargoAirlines, unlockCosts, aircraftCosts, airportGates, airports, airlineHubsAndRoutes, airlineColors, aircraftData, aircraftByAirline unchanged]
+const commercialAirlines = {
+  'Delta Air Lines': 'DAL',
+  'American Airlines': 'AAL',
+  'United Airlines': 'UAL',
+  'Southwest Airlines': 'SWA'
+};
+
+const cargoAirlines = {
+  'FedEx Express': 'FDX',
+  'UPS Airlines': 'UPS'
+};
+
+const unlockCosts = {
+  'DAL': 1000,
+  'AAL': 1000,
+  'UAL': 1000,
+  'SWA': 500,
+  'FDX': 0, // Free by default
+  'UPS': 750
+};
+
+const aircraftCosts = {
+  'A320': 500,
+  'B737': 450,
+  'B747': 1000,
+  'C208F': 200,
+  'MD11F': 800
+};
+
+const airportGates = {
+  'RJTT': { commercial: ['1', '2', '3'], cargo: ['4', '5'] },
+  'KLAX': { commercial: ['A1', 'A2', 'B1'], cargo: ['C1', 'C2'] },
+  'EGLL': { commercial: ['T1', 'T2'], cargo: ['T3'] },
+  'YSSY': { commercial: ['G1', 'G2'], cargo: ['F1'] }
+};
+
+const airports = {
+  'RJTT': { type: 'major', location: 'Tokyo', x: 100, y: 100 },
+  'KLAX': { type: 'major', location: 'Los Angeles', x: 200, y: 200 },
+  'EGLL': { type: 'major', location: 'London', x: 300, y: 300 },
+  'YSSY': { type: 'major', location: 'Sydney', x: 400, y: 400 }
+};
+
+const airlineHubsAndRoutes = {
+  'DAL': { hub: 'KLAX', routes: ['RJTT', 'EGLL'], routeFrequency: 0.7, description: 'Major US airline' },
+  'AAL': { hub: 'KLAX', routes: ['YSSY', 'EGLL'], routeFrequency: 0.6, description: 'Global passenger carrier' },
+  'UAL': { hub: 'RJTT', routes: ['KLAX', 'YSSY'], routeFrequency: 0.6, description: 'International airline' },
+  'SWA': { hub: 'YSSY', routes: ['KLAX'], routeFrequency: 0.8, description: 'Low-cost carrier' },
+  'FDX': { hub: 'KLAX', routes: ['RJTT', 'EGLL', 'YSSY'], routeFrequency: 0.5, description: 'Global cargo delivery' },
+  'UPS': { hub: 'EGLL', routes: ['KLAX', 'RJTT'], routeFrequency: 0.5, description: 'Cargo and logistics' }
+};
+
+const airlineColors = {
+  'DAL': { color: '#003087' },
+  'AAL': { color: '#1C2526' },
+  'UAL': { color: '#002244' },
+  'SWA': { color: '#F9B612' },
+  'FDX': { color: '#4B0082' },
+  'UPS': { color: '#351C15' }
+};
+
+const aircraftData = {
+  'A320': { size: 'regional', range: 3300, capacity: { pax: 180, cargo: 0 } },
+  'B737': { size: 'regional', range: 3000, capacity: { pax: 160, cargo: 0 } },
+  'B747': { size: 'major', range: 8000, capacity: { pax: 400, cargo: 0 } },
+  'C208F': { size: 'small', range: 1000, capacity: { pax: 0, cargo: 1000 } },
+  'MD11F': { size: 'major', range: 7200, capacity: { pax: 0, cargo: 90000 } }
+};
+
+const aircraftByAirline = {
+  'DAL': ['A320', 'B747'],
+  'AAL': ['A320', 'B737'],
+  'UAL': ['B737', 'B747'],
+  'SWA': ['B737'],
+  'FDX': ['C208F', 'MD11F'],
+  'UPS': ['MD11F']
+};
 
 // --- State ---
 const state = {
