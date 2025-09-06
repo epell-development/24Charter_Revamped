@@ -1,0 +1,8 @@
+{
+  "name": "24charter",
+  "version": "1.0.0",
+  "dependencies": {
+    "ws": "^8.18.0",
+    "node-fetch": "^2.7.0"
+  }
+}
